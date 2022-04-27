@@ -15,5 +15,11 @@
   "bugs": {
     "url": "https://github.com/Minisungam/Interacties/issues"
   },
-  "homepage": "https://github.com/Minisungam/Interacties#readme"
+  "homepage": "https://github.com/Minisungam/Interacties#readme",
+  "dependencies": {
+    "ejs": "^3.1.7"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.15"
+  }
 }
