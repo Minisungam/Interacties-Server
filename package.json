@@ -1,0 +1,19 @@
+{
+  "name": "interacties",
+  "version": "1.0.0",
+  "description": "a project to create a page that is loadable in OBS that displays interative items on stream",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Minisungam/Interacties.git"
+  },
+  "author": "Christopher Magnus",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/Minisungam/Interacties/issues"
+  },
+  "homepage": "https://github.com/Minisungam/Interacties#readme"
+}
