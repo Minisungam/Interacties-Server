@@ -3,6 +3,10 @@
     src: url(Library\ 3\ am.otf);
 }
 
+.animate__animated.animate__backInRight {
+    --animate-duration: 2s;
+}
+
 #rankBox {
     font-family: Library3AM;
     border: 2px solid black;

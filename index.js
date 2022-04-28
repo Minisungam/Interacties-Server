@@ -5,7 +5,7 @@ var interacties = express();
 interacties.use(express.static("public"));
 interacties.use(express.urlencoded({ extended: false }));
 
-// fetch for getting player info
+// fetch settings for getting player info
 const playerURL = "https://scoresaber.com/api/player/76561198048104357/basic";
 const settings = { method: 'Get' };
 

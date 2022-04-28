@@ -13,3 +13,16 @@ const fetchData = setInterval(function() {
         $("#disRank").html(playerData.rank);
     });
 }, 1000);
+
+// animate rankBox
+const animateRankBox = setInterval(function() {
+    if ($("#rankBox").hasClass("animate__backOutRight")) {
+        $("#rankBox").addClass("animate__backInRight");
+        $("#rankBox").removeClass("animate__backOutRight");
+    }
+    else {
+        $("#rankBox").addClass("animate__backOutRight");
+        $("#rankBox").removeClass("animate__backInRight");
+        setTimeout(function() {}, 90000)
+}
+}, 60000);
