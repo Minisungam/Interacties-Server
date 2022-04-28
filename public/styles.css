@@ -3,7 +3,11 @@
     src: url(Library\ 3\ am.otf);
 }
 
-.animate__animated.animate__backInRight {
+body {
+    overflow: hidden;
+}
+
+.animate__animated.animate__backInRight, .animate__animated.animate__backInUp {
     --animate-duration: 2s;
 }
 
@@ -33,4 +37,44 @@
 p {
     padding: 0px;
     margin: 0px;
+}
+
+#followerGoal {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    border: 2px solid black;
+    background-color: #262626;
+    border-radius: 1em;
+    width: 600px;
+    height: 80px;
+    position: absolute;
+    overflow: hidden;
+    bottom: 1em;
+    left: calc(50% - 300px);
+}
+
+#goalProgress {
+    z-index: -1;
+    position: absolute;
+    height: 100%;
+    background-color: #18a2ee;
+}
+
+
+#heart {
+    flex: 1;
+    display: inline-block;
+    height: 90%;
+    object-fit: contain;
+    margin-left: 3px;
+    vertical-align: middle;
+}
+
+#goalText {
+    flex: 4;
+    display: inline-block;
+    font-size: 36px;
+    font-family: Library3AM;
+    color: #e23c6b;
 }
