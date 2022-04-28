@@ -1,19 +1,37 @@
-const {JSDOM} = require("jsdom");
-const {window} = new JSDOM("");
-const $ = require("jquery")(window);
+const express = require("express");
+const fetch = require("node-fetch");
+var interacties = express();
 
-// Run scoreSaber function every minute
-const updateScoreSaberTimer = setInterval(function() {
-    scoreSaber();
+interacties.use(express.static("public"));
+interacties.use(express.urlencoded({ extended: false }));
+
+// fetch for getting player info
+const playerURL = "https://scoresaber.com/api/player/76561198048104357/basic";
+const settings = { method: 'Get' };
+
+var playerData;
+fetch(playerURL, settings)
+    .then(res => res.json())
+    .then((json) => {
+    playerData = json;
+});
+
+interacties.get("/", (req,res) => {
+    res.render("index");
+});
+
+interacties.get("/getplayer", (req, res) => {
+    res.send(playerData);
+});
+
+// refresh playerdata every minute
+const updatePlayerData = setInterval(function() {
+    fetch(playerURL, settings)
+    .then(res => res.json())
+    .then((json) => {
+        playerData = json;
+    })
 }, 60000);
 
-// Get ScoreSaber player info and 
-function scoreSaber() {
-    var player = $.getJSON('https://scoresaber.com/api/player/76561198048104357/basic', function(data) {return data;});
-
-    console.log(player);
-
-    console.log(player.name);
-    console.log(player.rank);
-    console.log(player.countryRank);
-}
+interacties.listen(5500);
+console.log("Executed normally: http://localhost:5500/");

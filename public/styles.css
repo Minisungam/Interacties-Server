@@ -1,0 +1,32 @@
+@font-face {
+    font-family: Library3AM;
+    src: url(Library\ 3\ am.otf);
+}
+
+#rankBox {
+    font-family: Library3AM;
+    border: 2px solid black;
+    max-width: max-content;
+    max-height: max-content;
+    border-radius: 0.5em;
+    padding: 10px;
+    background-color: #262626;
+    position: absolute;
+    top: 1em;
+    right: 1em;
+    font-size: 3em;
+}
+
+#disUserName {
+    color: #e23c6b;
+}
+
+#disRank {
+    text-align: right;
+    color: #18a2ee;
+}
+
+p {
+    padding: 0px;
+    margin: 0px;
+}
