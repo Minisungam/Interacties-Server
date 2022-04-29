@@ -8,7 +8,7 @@ interacties.use(express.urlencoded({ extended: false }));
 
 // fetch settings for getting player info
 const playerURL = "https://scoresaber.com/api/player/76561198048104357/basic";
-const settings = { method: 'Get' };78
+const settings = { method: 'Get' };
 
 // initial get follower goal information from twitch
 var goalData;

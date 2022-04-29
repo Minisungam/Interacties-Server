@@ -11,3 +11,10 @@ Features may include:
 - [x] Timed animations so everything isn't displayed all the time
 - [ ] Chat integration
 - [ ] Other interactions done via chat
+
+Installation Requirements:
+
+- Node.JS (latest)
+- Twitch CLI (latest)
+
+Subject to change.

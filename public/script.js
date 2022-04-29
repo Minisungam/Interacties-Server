@@ -1,4 +1,4 @@
-var enableBS=true, enableFG=true, enableHR=false;
+var enableBS=false, enableFG=true, enableHR=true;
 
 var playerData;
 var goalData;
