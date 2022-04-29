@@ -12,7 +12,6 @@ const settings = { method: 'Get' };78
 
 // initial get follower goal information from twitch
 var goalData;
-
 exec("twitch api get goals -q broadcaster_id=27805442", (error, stdout, stderr) => {
     if (error) {
         console.log(`error: ${error.message}`);
@@ -56,6 +55,7 @@ const updatePlayerData = setInterval(function() {
     })
 }, 60000);
 
+// refresh goal data from twitch cli
 const updateGoalData = setInterval(function() {
     exec("twitch api get goals -q broadcaster_id=27805442", (error, stdout, stderr) => {
         if (error) {
