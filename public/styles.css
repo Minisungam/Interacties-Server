@@ -82,20 +82,11 @@ p {
 
 #heartRate {
     position: absolute;
-    height: 200;
-    width: 600;
     overflow: auto;
     left: 1em;
     bottom: -8em;
-}
-
-#heartRate iframe {
     -webkit-transform: scale(0.6);
     transform: scale(0.6);
     -webkit-transform-origin: 0 0;
     transform-origin: 0 0;
-}
-
-.hidden {
-    display: none;
 }

@@ -1,4 +1,4 @@
-var enableBS=false, enableFG=true, enableHR=true;
+var enableBS=true, enableFG=true, enableHR=false;
 
 var playerData;
 var goalData;
@@ -27,45 +27,47 @@ async function init() {
 }
 
 
-// animate rankBox
-if (enableBS) {
-    const animateRankBox = setInterval(async function() {
-        // Boxes moving onto screen
-        if ($("#rankBox").hasClass("animate__backOutRight")) {
-            $("#rankBox").addClass("animate__backInRight");
-            $("#rankBox").removeClass("animate__backOutRight");
-        }
-        // Boxes moving off of screen
-        else {
-            $("#rankBox").addClass("animate__backOutRight");
-            $("#rankBox").removeClass("animate__backInRight");
-            await sleep(90000);
-        }
-    }, 30000);
-}
+$(document).ready(function() {
+    // animate rankBox
+    if (enableBS) {
+        const animateRankBox = setInterval(async function() {
+            // Boxes moving onto screen
+            if ($("#rankBox").hasClass("animate__backOutRight")) {
+                $("#rankBox").addClass("animate__backInRight");
+                $("#rankBox").removeClass("animate__backOutRight");
+            }
+            // Boxes moving off of screen
+            else {
+                $("#rankBox").addClass("animate__backOutRight");
+                $("#rankBox").removeClass("animate__backInRight");
+                await sleep(90000);
+            }
+        }, 30000);
+    }
 
-// animate follower goal box
-if (enableFG) {
-    const animateFollowerGoal = setInterval(async function() {
-        // Boxes moving onto screen
-        if ($("#followerGoal").hasClass("animate__backOutDown")) {
-            $("#followerGoal").addClass("animate__backInUp");
-            $("#followerGoal").removeClass("animate__backOutDown");
-            fillFollowerBar();
-        }
-        // Boxes moving off of screen
-        else {
-            $("#followerGoal").addClass("animate__backOutDown");
-            $("#followerGoal").removeClass("animate__backInUp");
-            await sleep(90000);
-        }
-    }, 30000);
-}
+    // animate follower goal box
+    if (enableFG) {
+        const animateFollowerGoal = setInterval(async function() {
+            // Boxes moving onto screen
+            if ($("#followerGoal").hasClass("animate__backOutDown")) {
+                $("#followerGoal").addClass("animate__backInUp");
+                $("#followerGoal").removeClass("animate__backOutDown");
+                fillFollowerBar();
+            }
+            // Boxes moving off of screen
+            else {
+                $("#followerGoal").addClass("animate__backOutDown");
+                $("#followerGoal").removeClass("animate__backInUp");
+                await sleep(90000);
+            }
+        }, 30000);
+    }
 
-if (enableHR) {
-    $("#heartRate").addClass("animate__backInLeft");
-    $("#heartRate").removeClass("animate__backOutLeft");
-}
+    // hide / show the heart rate monitor
+    if (enableHR == false) {
+        $("#heartRate").css("display", "none");
+    }
+});
 
 // animation for filling the follower bar
 async function fillFollowerBar() {
