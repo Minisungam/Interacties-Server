@@ -9,6 +9,8 @@ Features may include:
 - [x] Beat Saber name and ScoreSaber rank
 - [x] Heart rate pulled from Pulsoid (through an iframe, perchance?)
 - [x] Timed animations so everything isn't displayed all the time
+- [x] Modular component use based on parameters set on page call
+- [ ] Settings in config file
 - [ ] Chat integration
 - [ ] Other interactions done via chat
 

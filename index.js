@@ -1,7 +1,10 @@
 const express = require("express");
+const { Template } = require("ejs");
 const fetch = require("node-fetch");
 const { exec } = require("child_process");
 var interacties = express();
+
+interacties.set("view engine", "ejs");
 
 interacties.use(express.static("public"));
 interacties.use(express.urlencoded({ extended: false }));
@@ -30,12 +33,20 @@ var playerData;
 fetch(playerURL, settings)
     .then(res => res.json())
     .then((json) => {
-    playerData = json;
+        playerData = json;
 });
 
 // express GET requests
-interacties.get("/", (req,res) => {
-    res.render("index");
+interacties.get("/", (req,res) => {  
+    var enableBS = req.query.enableBS, enableFG = req.query.enableFG, enableHR = req.query.enableHR;
+    if (req.query.enableBS == undefined) {enableBS = true}
+    if (req.query.enableFG == undefined) {enableFG = true}
+    if (req.query.enableHR == undefined) {enableHR = true}
+    res.render("index", {
+        enableBS: enableBS,
+        enableFG: enableFG,
+        enableHR: enableHR
+    });
 });
 
 interacties.get("/getplayer", (req, res) => {

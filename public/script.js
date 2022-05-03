@@ -1,8 +1,14 @@
-var enableBS=false, enableFG=true, enableHR=true;
-
 var playerData;
 var goalData;
 var barProgress = 0;
+
+// convert enables strings to boolean
+if (enableBS == "false") { enableBS = Boolean(false) }
+else { enableBS = Boolean(true) }
+if (enableFG == "false") { enableFG = Boolean(false) }
+else { enableFG = Boolean(true) }
+if (enableHR == "false") { enableHR = Boolean(false) }
+else { enableHR = Boolean(true) }
 
 // fetch playerData from server on an interval
 const fetchPlayerData = setInterval(function() {
