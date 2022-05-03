@@ -2,7 +2,24 @@ const express = require("express");
 const { Template } = require("ejs");
 const fetch = require("node-fetch");
 const { exec } = require("child_process");
+const fs = require("fs");
 var interacties = express();
+
+// read config file
+let config; 
+
+fs.readFile("config.json", (error, data) => {
+    if (error) { 
+        console.log(`error:  ${error}`);
+        return; 
+    };
+    config = JSON.parse(data);
+});
+
+
+setTimeout(function() { 
+    console.log(config);
+}, 1500);
 
 interacties.set("view engine", "ejs");
 

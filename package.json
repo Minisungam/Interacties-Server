@@ -9,6 +9,8 @@
   "author": "Christopher Magnus",
   "license": "GPL-3.0",
   "dependencies": {
+    "@twurple/api": "^5.1.6",
+    "@twurple/auth": "^5.1.6",
     "ejs": "^3.1.7",
     "express": "^4.18.0",
     "node-fetch": "^2.6.7"
