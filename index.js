@@ -6,20 +6,9 @@ const fs = require("fs");
 var interacties = express();
 
 // read config file
-let config; 
+let config = JSON.parse(fs.readFileSync("./config.json", "UTF-8"));
 
-fs.readFile("config.json", (error, data) => {
-    if (error) { 
-        console.log(`error:  ${error}`);
-        return; 
-    };
-    config = JSON.parse(data);
-});
-
-
-setTimeout(function() { 
-    console.log(config);
-}, 1500);
+console.log(config);
 
 interacties.set("view engine", "ejs");
 
@@ -27,12 +16,12 @@ interacties.use(express.static("public"));
 interacties.use(express.urlencoded({ extended: false }));
 
 // fetch settings for getting player info
-const playerURL = "https://scoresaber.com/api/player/76561198048104357/basic";
+const playerURL = config.scoreSaberProfileLink;
 const settings = { method: 'Get' };
 
 // initial get follower goal information from twitch
 var goalData;
-exec("twitch api get goals -q broadcaster_id=27805442", (error, stdout, stderr) => {
+exec(`twitch api get goals -q broadcaster_id=${config.twitchBroadcasterId}`, (error, stdout, stderr) => {
     if (error) {
         console.log(`error: ${error.message}`);
         return;

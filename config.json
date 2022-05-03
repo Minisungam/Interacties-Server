@@ -1,6 +1,6 @@
 {
     "twitchClientId": "",
-    "twitchClientSecret": "",
+    "twitchAccessToken": "",
     "scoreSaberProfileLink": "",
     "twitchBroadcasterId": ""
 }
