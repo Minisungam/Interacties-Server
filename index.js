@@ -1,14 +1,16 @@
+// Christopher Magnus 2022
+
+// imports
 const express = require("express");
 const { Template } = require("ejs");
 const fetch = require("node-fetch");
 const { exec } = require("child_process");
 const fs = require("fs");
+
 var interacties = express();
 
 // read config file
-let config = JSON.parse(fs.readFileSync("./config.json", "UTF-8"));
-
-console.log(config);
+var config = JSON.parse(fs.readFileSync("./config.json", "UTF-8"));
 
 interacties.set("view engine", "ejs");
 
@@ -19,28 +21,62 @@ interacties.use(express.urlencoded({ extended: false }));
 const playerURL = config.scoreSaberProfileLink;
 const settings = { method: 'Get' };
 
-// initial get follower goal information from twitch
-var goalData;
-exec(`twitch api get goals -q broadcaster_id=${config.twitchBroadcasterId}`, (error, stdout, stderr) => {
-    if (error) {
-        console.log(`error: ${error.message}`);
-        return;
-    }
-    if (stderr) {
-        console.log(`stderr: ${stderr}`);
-        return;
-    }
-    var parsedOut = JSON.parse(stdout);
-    goalData = parsedOut.data;
-});
-
-// initial fetch of player data
+// data that gets refreshed
 var playerData;
-fetch(playerURL, settings)
+var goalData;
+
+// data that gets caught once
+var broadcasterId;
+
+// get broadcasterId from twitch api
+async function getBroadcasterId() {
+    exec(`twitch api get users -q login=${config.twitchUserName}`, (error, stdout, stderr) => {
+        if (error) {
+            console.log(`error: ${error.message}`);
+            return;
+        }
+        if (stderr) {
+            console.log(`stderr: ${stderr}`);
+            return;
+        }
+        var parsedOut = JSON.parse(stdout);
+        broadcasterId = parsedOut.data[0].id;
+    });
+}
+
+// functions to refresh data
+async function refreshGoalData() {
+    exec(`twitch api get goals -q broadcaster_id=${broadcasterId}`, (error, stdout, stderr) => {
+        if (error) {
+            console.log(`error: ${error.message}`);
+            return;
+        }
+        if (stderr) {
+            console.log(`stderr: ${stderr}`);
+            return;
+        }
+        var parsedOut = JSON.parse(stdout);
+        goalData = parsedOut.data;
+    });
+}
+
+
+async function refreshPlayerData() {
+    await fetch(playerURL, settings)
     .then(res => res.json())
     .then((json) => {
         playerData = json;
-});
+    });
+}
+
+// initial setup function
+async function initData() {
+    await getBroadcasterId();
+    await refreshGoalData();
+    await refreshPlayerData();
+}
+
+initData();
 
 // express GET requests
 interacties.get("/", (req,res) => {  
@@ -65,28 +101,13 @@ interacties.get("/getgoal", (req, res) => {
 
 // refresh playerdata every minute
 const updatePlayerData = setInterval(function() {
-    fetch(playerURL, settings)
-    .then(res => res.json())
-    .then((json) => {
-        playerData = json;
-    })
+    refreshPlayerData();
 }, 60000);
 
-// refresh goal data from twitch cli
+// refresh goal data from twitch
 const updateGoalData = setInterval(function() {
-    exec("twitch api get goals -q broadcaster_id=27805442", (error, stdout, stderr) => {
-        if (error) {
-            console.log(`error: ${error.message}`);
-            return;
-        }
-        if (stderr) {
-            console.log(`stderr: ${stderr}`);
-            return;
-        }
-        var parsedOut = JSON.parse(stdout);
-        goalData = parsedOut.data;
-    });
-}, 5000);
+    refreshGoalData();
+}, 15000);
 
 
 interacties.listen(5500);

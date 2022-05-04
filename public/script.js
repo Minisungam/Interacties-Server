@@ -30,6 +30,7 @@ init();
 async function init() {
     await sleep(1200);
     fillFollowerBar();
+    console.log(goalData);
 }
 
 
