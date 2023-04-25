@@ -7,7 +7,7 @@ My goal for this is to create a browser based OBS overlay for a livestream.
 Features may include:
 
 - [x] Beat Saber name and ScoreSaber rank
-- [x] Heart rate pulled from Pulsoid (through an iframe, perchance?)
+- [x] Heart rate scraped from Pulsoid
 - [x] Timed animations so everything isn't displayed all the time
 - [x] Modular component use based on parameters set on page call
 - [x] Settings in config file
@@ -18,6 +18,5 @@ Features may include:
 Installation Requirements:
 
 - Node.JS (latest)
-- Twitch CLI (latest)
 
 Subject to change.
