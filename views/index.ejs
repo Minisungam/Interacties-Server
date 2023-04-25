@@ -8,7 +8,7 @@
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
         <script>var enableBS= "<%- enableBS %>", enableFG= "<%- enableFG %>", enableHR= "<%- enableHR %>";</script>
         <script src="script.js"></script>
-        <title>Test</title>
+        <title>Interacties</title>
     </head>
     <body>
         <div id="rankBox" class="animate__animated animate__backOutRight">
@@ -21,6 +21,9 @@
             <img id="heart" src="https://static.twitchcdn.net/assets/follow-c7d174e9553cfc22fa72.svg" alt="follower hearts">
             <p id="goalText"></p>
         </div>
-        <iframe id="heartRate" src="https://pulsoid.net/widget/view/c3e55df5-ff61-49c0-96e2-864df6efa8a8" width="600" height="300" frameBorder="0"></iframe>
+        <div id="heartRate">
+            <p id="heartRateText">HR:</p>
+            <p id="heartRateNumber"></p>
+        </div>
     </body>
 </html>

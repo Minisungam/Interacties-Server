@@ -1,5 +1,6 @@
 var playerData;
 var goalData;
+var heartRate;
 var barProgress = 0;
 
 // convert enables strings to boolean
@@ -24,6 +25,13 @@ const fetchGoalData = setInterval(function() {
         goalData = json;
     });
 }, 1000);
+
+const fetchHeartRate = setInterval(function() {
+    $.getJSON('/getheartrate', function(json) {
+        heartRate = json.heartRate;
+        $("#heartRateNumber").html(heartRate);
+    });
+}, 100);
 
 init();
 
@@ -71,7 +79,10 @@ $(document).ready(function() {
     }
 
     // hide / show the heart rate monitor
-    if (enableHR == false) {
+    if (enableHR) {
+        $("#heartRateText").css("display", "inline-block");
+        $("#heartRateNumber").css("display", "inline-block");
+    } else {
         $("#heartRate").css("display", "none");
     }
 });
@@ -80,9 +91,9 @@ $(document).ready(function() {
 async function fillFollowerBar() {
     $("#followerGoal").removeClass("animate__pulse");
     await sleep(1200);
-    for (let i = 0; i <= goalData[0].current_amount; i++) {
-        $("#goalText").html(`Follower Goal ${i}/${goalData[0].target_amount}`);
-        $("#goalProgress").css("width", ((i / goalData[0].target_amount) * 100) + "%");
+    for (let i = 0; i <= goalData.current_amount; i++) {
+        $("#goalText").html(`Follower Goal ${i}/${goalData.target_amount}`);
+        $("#goalProgress").css("width", ((i / goalData.target_amount) * 100) + "%");
         await sleep(30);
     }
     $("#followerGoal").addClass("animate__pulse");

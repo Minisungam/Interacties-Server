@@ -1,6 +1,7 @@
 {
-    "twitchClientId": "",
-    "twitchAccessToken": "",
+    "youtubeChannelID": "",
+    "youtubeAPIKey": "",
     "scoreSaberProfileLink": "",
-    "twitchUserName": ""
+    "twitchUserName": "",
+    "pusloidWidgetLink": ""
 }
