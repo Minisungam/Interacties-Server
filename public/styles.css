@@ -84,14 +84,42 @@ p {
     overflow: auto;
     left: 0.5em;
     bottom: 0.5em;
-    font-size: 64px;
+    font-size: 86px;
     color: #e23c6b;
 }
 
 #heartRateText {
+    display: inline-block;
     color: #e23c6b;
 }
 
 #heartRateNumber {
+    display: inline-block;
     color: #18a2ee;
+}
+
+#liveChatBox {
+    position: absolute;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column-reverse;
+    left: 0.5em;
+    bottom: 0.5em;
+    height: 140px;
+    width: 400px;
+    font-size: 18px;
+}
+
+.chatMessage {
+    overflow-wrap: break-word;
+}
+
+.chatUserName {
+    display: inline;
+    color: #18a2ee;
+}
+
+.chatText {
+    display: inline;
+    color: #e23c6b;
 }

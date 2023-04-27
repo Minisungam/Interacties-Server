@@ -1,17 +1,22 @@
 var playerData;
 var goalData;
 var heartRate;
+var liveChatObject;
+var oldLiveChatObject;
+var liveChatHTML;
 var barProgress = 0;
 
-// convert enables strings to boolean
+// Convert enables strings to boolean
 if (enableBS == "false") { enableBS = Boolean(false) }
 else { enableBS = Boolean(true) }
 if (enableFG == "false") { enableFG = Boolean(false) }
 else { enableFG = Boolean(true) }
 if (enableHR == "false") { enableHR = Boolean(false) }
 else { enableHR = Boolean(true) }
+if (enableLC == "false") { enableLC = Boolean(false) }
+else { enableLC = Boolean(true) }
 
-// fetch playerData from server on an interval
+// Fetch playerData from server on an interval
 const fetchPlayerData = setInterval(function() {
     $.getJSON('/getplayer', function(json) {
         playerData = json;
@@ -33,17 +38,33 @@ const fetchHeartRate = setInterval(function() {
     });
 }, 100);
 
+const fetchLiveChat = setInterval(function() {
+    $.getJSON('/getlivechat', function(json) {
+        liveChatObject = json;
+        if (liveChatObject !== oldLiveChatObject)
+        {
+            liveChatHTML = "";
+            liveChatObject.liveChat.forEach(displayChat);
+            $("#liveChat").html(liveChatHTML);
+            oldLiveChatObject = liveChatObject;
+        }
+    });
+}, 250);
+
+function displayChat(item, index, arr) {
+    liveChatHTML += "<div class=\"chatMessage\"><p class=\"chatUserName\">" + item.author.name + ": </p><p class=\"chatText\">" + item.message[0].text + "</p></div>";
+}
+
 init();
 
 async function init() {
     await sleep(1200);
     fillFollowerBar();
-    console.log(goalData);
 }
 
 
 $(document).ready(function() {
-    // animate rankBox
+    // Animate rankBox
     if (enableBS) {
         const animateRankBox = setInterval(async function() {
             // Boxes moving onto screen
@@ -60,7 +81,7 @@ $(document).ready(function() {
         }, 30000);
     }
 
-    // animate follower goal box
+    // Animate follower goal box
     if (enableFG) {
         const animateFollowerGoal = setInterval(async function() {
             // Boxes moving onto screen
@@ -78,21 +99,24 @@ $(document).ready(function() {
         }, 30000);
     }
 
-    // hide / show the heart rate monitor
-    if (enableHR) {
-        $("#heartRateText").css("display", "inline-block");
-        $("#heartRateNumber").css("display", "inline-block");
-    } else {
+    // Hide / show the heart rate monitor
+    if (!enableHR) {
         $("#heartRate").css("display", "none");
+    }
+
+    if (enableLC) {
+        $("#heartRate").css("bottom", "1.6em");
+    } else {
+        $("#liveChatBox").css("display", "none");
     }
 });
 
-// animation for filling the follower bar
+// Animation for filling the follower bar
 async function fillFollowerBar() {
     $("#followerGoal").removeClass("animate__pulse");
     await sleep(1200);
     for (let i = 0; i <= goalData.current_amount; i++) {
-        $("#goalText").html(`Follower Goal ${i}/${goalData.target_amount}`);
+        $("#goalText").html(`Subscriber Goal ${i}/${goalData.target_amount}`);
         $("#goalProgress").css("width", ((i / goalData.target_amount) * 100) + "%");
         await sleep(30);
     }

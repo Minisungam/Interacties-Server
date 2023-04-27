@@ -7,6 +7,7 @@ const fetch = require("node-fetch");
 const { exec } = require("child_process");
 const puppeteer = require('puppeteer');
 const fs = require("fs");
+const { LiveChat } = require("youtube-chat");
 const { Console } = require("console");
 
 var interacties = express();
@@ -19,16 +20,19 @@ interacties.set("view engine", "ejs");
 interacties.use(express.static("public"));
 interacties.use(express.urlencoded({ extended: false }));
 
-// Fetch settings for getting player info
+// Fetch settings
 const playerURL = config.scoreSaberProfileLink;
 const settings = { method: 'Get' };
+//const liveChat = new LiveChat({liveId: "Hyu2uWNHpno"});
+const liveChat = new LiveChat({channelId: config.youtubeChannelID});
 
 // Data that gets refreshed
 var playerData;
-var goalData = { current_amount: 0, target_amount: 12 };
+var goalData = { current_amount: 0, target_amount: 15 };
 var heartRateData = { heartRate: 0 };
+var liveChatObject = { liveChat: [] };
 
-// Functions to refresh data
+// Refresh goal data from Youtube
 async function refreshGoalData() {
     await fetch("https://www.googleapis.com/youtube/v3/channels?id=" + config.youtubeChannelID + "&key=" + config.youtubeAPIKey + "&part=statistics", settings)
     .then(res => res.json())
@@ -37,7 +41,7 @@ async function refreshGoalData() {
     });
 }
 
-
+// Refresh BeatSaver player information
 async function refreshPlayerData() {
     await fetch(playerURL, settings)
     .then(res => res.json())
@@ -46,6 +50,27 @@ async function refreshPlayerData() {
     });
 }
 
+// Refresh Youtube Live Chat information
+async function refreshLiveChat() {
+    const chat = await liveChat.start()
+    if (!chat) {
+        console.log("Failed to start LiveChat");
+        return;
+    } else {
+        console.log("LiveChat started successfully");
+        liveChat.on("chat", (chatItem) => {
+            liveChatObject.liveChat.push(chatItem);
+            console.log(chatItem);
+        });
+        if (liveChatObject.liveChat.length > 5)
+        {
+            liveChatObject.liveChat.shift();
+        }
+    }
+}
+
+
+// Scrape heart rate information from Pulsoid
 (async () => {
     const browser = await puppeteer.launch({ headless: "new" });
     const page = await browser.newPage();
@@ -81,20 +106,23 @@ async function refreshPlayerData() {
 async function initData() {
     await refreshGoalData();
     await refreshPlayerData();
+    await refreshLiveChat();
 }
 
 initData();
 
 // Express GET requests
 interacties.get("/", (req,res) => {  
-    var enableBS = req.query.enableBS, enableFG = req.query.enableFG, enableHR = req.query.enableHR;
+    var enableBS = req.query.enableBS, enableFG = req.query.enableFG, enableHR = req.query.enableHR, enableLC = req.query.enableLC;
     if (req.query.enableBS == undefined) {enableBS = true}
     if (req.query.enableFG == undefined) {enableFG = true}
     if (req.query.enableHR == undefined) {enableHR = true}
+    if (req.query.enableLC == undefined) {enableLC = true}
     res.render("index", {
         enableBS: enableBS,
         enableFG: enableFG,
-        enableHR: enableHR
+        enableHR: enableHR,
+        enableLC: enableLC
     });
 });
 
@@ -110,6 +138,11 @@ interacties.get("/getheartrate", (req, res) => {
     res.send(heartRateData);
 });
 
+interacties.get("/getlivechat", (req, res) => {
+    res.send(liveChatObject);
+});
+
+
 // Refresh playerdata every minute
 const updatePlayerData = setInterval(function() {
     refreshPlayerData();
@@ -119,7 +152,6 @@ const updatePlayerData = setInterval(function() {
 const updateGoalData = setInterval(function() {
     refreshGoalData();
 }, 15000);
-
 
 interacties.listen(5500);
 console.log("Executed normally: http://localhost:5500/");
