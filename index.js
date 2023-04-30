@@ -52,7 +52,7 @@ async function refreshPlayerData() {
 
 // Refresh Youtube Live Chat information
 async function refreshLiveChat() {
-    const chat = await liveChat.start()
+    const chat = await liveChat.start();
     if (!chat) {
         console.log("Failed to start LiveChat");
         return;
@@ -72,7 +72,7 @@ async function refreshLiveChat() {
 
 // Scrape heart rate information from Pulsoid
 (async () => {
-    const browser = await puppeteer.launch({ headless: "new" });
+    const browser = await puppeteer.launch({ headless: "new" }).catch("HR timeout. Not using it?");
     const page = await browser.newPage();
     page.setDefaultTimeout(0);
 
