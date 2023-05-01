@@ -22,9 +22,9 @@ interacties.use(express.urlencoded({ extended: false }));
 
 // Fetch settings
 const playerURL = config.scoreSaberProfileLink;
-const settings = { method: 'Get' };
-//const liveChat = new LiveChat({liveId: "Hyu2uWNHpno"});
-const liveChat = new LiveChat({channelId: config.youtubeChannelID});
+const settings = { method: 'GET' };
+//const liveChat = new LiveChat({ liveId: "" });
+const liveChat = new LiveChat({ channelId: config.youtubeChannelID });
 
 // Data that gets refreshed
 var playerData;
@@ -81,7 +81,8 @@ async function refreshLiveChat() {
     // Wait for the span element to appear on the page
     await page.waitForSelector('span');
 
-    // Find the span element by its tag name
+    // Find the heart rate information by its element name 
+    // (The ID changes on each load, and it's the only span element)
     const spans = await page.$$('span');
     let span = spans[0];
   

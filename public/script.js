@@ -123,7 +123,7 @@ async function fillFollowerBar() {
     $("#followerGoal").addClass("animate__pulse");
 }
 
-// sleep function because reasons
+// Sleep function
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
