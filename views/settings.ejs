@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <meta charset="utf-8">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+        <title>Interacties Settings</title>
+        <style>
+            /* Add custom styles to make the form more condensed and left-leaning */
+            .form-group {
+              margin-bottom: 10px;
+            }
+            label {
+              display: inline-block;
+              width: 200px;
+              text-align: right;
+              margin-right: 10px;
+            }
+            input[type="checkbox"] {
+              margin: 0;
+            }
+          </style>
+    </head>
+    <body>
+        <div class="container">
+            <h2>Interacties Settings</h2>
+            <form id="my-form" action="http://localhost:3000/setvalues" method="POST">
+              <div class="form-group">
+                <label for="heart-rate">Enable Heart Rate:</label>
+                <input type="checkbox" class="form-control" id="heart-rate" name="heart-rate">
+              </div>
+              <div class="form-group">
+                <label for="beat-saber">Enable Beat Saber:</label>
+                <input type="checkbox" class="form-control" id="beat-saber" name="beat-saber">
+              </div>
+              <div class="form-group">
+                <label for="live-chat">Enable Live Chat:</label>
+                <input type="checkbox" class="form-control" id="live-chat" name="live-chat">
+              </div>
+              <div class="form-group">
+                <label for="subscriber-count">Enable Subscriber Count:</label>
+                <input type="checkbox" class="form-control" id="subscriber-count" name="subscriber-count">
+              </div>
+              <div class="form-group">
+                <label for="youtube-channel-id">YouTube Channel ID:</label>
+                <input type="text" class="form-control" id="youtube-channel-id" name="youtube-channel-id">
+              </div>
+              <div class="form-group">
+                <label for="youtube-api-key">YouTube API Key:</label>
+                <input type="text" class="form-control" id="youtube-api-key" name="youtube-api-key">
+              </div>
+              <div class="form-group">
+                <label for="score-saber-api-profile-link">Score Saber API Profile Link:</label>
+                <input type="text" class="form-control" id="score-saber-api-profile-link" name="score-saber-api-profile-link">
+              </div>
+              <div class="form-group">
+                <label for="pusloid-widget-link">Pusloid Widget Link:</label>
+                <input type="text" class="form-control" id="pusloid-widget-link" name="pusloid-widget-link">
+              </div>
+              <button type="button" onclick="submitForm()" class="btn btn-default">Submit</button>
+            </form>
+          </div>
+          
+          <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+          <script>
+            function submitForm() {
+              // Get the form element
+              var form = document.getElementById("my-form");
+      
+              // Create a FormData object from the form data
+              var formData = new FormData(form);
+      
+              // Use the fetch API to submit the form data as a POST request
+              fetch("http://localhost:5500/setvalues", {
+                method: "POST",
+                body: formData
+              })
+              .then(response => response.text())
+                .then(data => {
+                // Handle the response data
+                console.log(data);
+                })
+                .catch(error => {
+                // Handle any errors
+                console.error(error);
+                });
+            }
+        </script>
+    </body>
+</html>

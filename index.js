@@ -4,13 +4,14 @@
 const express = require("express");
 const { Template } = require("ejs");
 const fetch = require("node-fetch");
-const { exec } = require("child_process");
 const puppeteer = require('puppeteer');
 const fs = require("fs");
 const { LiveChat } = require("youtube-chat");
-const { Console } = require("console");
 
 var interacties = express();
+
+// Enable variables
+var liveChatEnabled = true;
 
 // Read config file
 var config = JSON.parse(fs.readFileSync("./config.json", "UTF-8"));
@@ -23,14 +24,21 @@ interacties.use(express.urlencoded({ extended: false }));
 // Fetch settings
 const playerURL = config.scoreSaberProfileLink;
 const settings = { method: 'GET' };
-//const liveChat = new LiveChat({ liveId: "" });
-const liveChat = new LiveChat({ channelId: config.youtubeChannelID });
+const liveChat = null;
+try {
+    liveChat = new LiveChat({ channelId: config.youtubeChannelID });
+} catch {
+    liveChatEnabled = false;
+    console.log("LiveChat Error: Are you live?")
+}
 
 // Data that gets refreshed
 var playerData;
 var goalData = { current_amount: 0, target_amount: 15 };
 var heartRateData = { heartRate: 0 };
 var liveChatObject = { liveChat: [] };
+
+
 
 // Refresh goal data from Youtube
 async function refreshGoalData() {
@@ -52,19 +60,21 @@ async function refreshPlayerData() {
 
 // Refresh Youtube Live Chat information
 async function refreshLiveChat() {
-    const chat = await liveChat.start();
-    if (!chat) {
-        console.log("Failed to start LiveChat");
-        return;
-    } else {
-        console.log("LiveChat started successfully");
-        liveChat.on("chat", (chatItem) => {
-            liveChatObject.liveChat.push(chatItem);
-            console.log(chatItem);
-        });
-        if (liveChatObject.liveChat.length > 5)
-        {
-            liveChatObject.liveChat.shift();
+    if (liveChatEnabled) {
+        const chat = await liveChat.start();
+        if (!chat) {
+            console.log("Failed to start LiveChat");
+            return;
+        } else {
+            console.log("LiveChat started successfully");
+            liveChat.on("chat", (chatItem) => {
+                liveChatObject.liveChat.push(chatItem);
+                console.log(chatItem);
+            });
+            if (liveChatObject.liveChat.length > 5)
+            {
+                liveChatObject.liveChat.shift();
+            }
         }
     }
 }
@@ -72,35 +82,37 @@ async function refreshLiveChat() {
 
 // Scrape heart rate information from Pulsoid
 (async () => {
-    const browser = await puppeteer.launch({ headless: "new" }).catch("HR timeout. Not using it?");
-    const page = await browser.newPage();
-    page.setDefaultTimeout(0);
+    if (liveChatEnabled) {
+        const browser = await puppeteer.launch({ headless: "new" });
+        const page = await browser.newPage();
+        page.setDefaultTimeout(0);
 
-    await page.goto(config.pusloidWidgetLink);
+        await page.goto(config.pusloidWidgetLink);
 
-    // Wait for the span element to appear on the page
-    await page.waitForSelector('span');
+        // Wait for the span element to appear on the page
+        await page.waitForSelector('span').catch("HR timeout. Not using it?");
 
-    // Find the heart rate information by its element name 
-    // (The ID changes on each load, and it's the only span element)
-    const spans = await page.$$('span');
-    let span = spans[0];
-  
-    // Get the initial value of the element
-    heartRateData.heartRate = await span.evaluate(el => el.innerText);
-    console.log("HR found, first value: " + heartRateData.heartRate);
-  
-    // Continuously monitor the element for changes
-    setInterval(async () => {
-      // Get the new value of the element
-      let newValue = await span.evaluate(el => el.innerText);
-  
-      // Update the internal variable with the new value
-      heartRateData.heartRate = newValue;
-    }, 100);
-  
-    // Keep the browser open indefinitely
-    await new Promise(() => {});
+        // Find the heart rate information by its element name 
+        // (The ID changes on each load, and it's the only span element)
+        const spans = await page.$$('span');
+        let span = spans[0];
+    
+        // Get the initial value of the element
+        heartRateData.heartRate = await span.evaluate(el => el.innerText);
+        console.log("HR found, first value: " + heartRateData.heartRate);
+    
+        // Continuously monitor the element for changes
+        setInterval(async () => {
+        // Get the new value of the element
+        let newValue = await span.evaluate(el => el.innerText);
+    
+        // Update the internal variable with the new value
+        heartRateData.heartRate = newValue;
+        }, 100);
+    
+        // Keep the browser open indefinitely
+        await new Promise(() => {});
+    }
   })();
 
 // Initial setup function
@@ -127,6 +139,10 @@ interacties.get("/", (req,res) => {
     });
 });
 
+interacties.get("/settings", (req,res) => {  
+    res.render("settings");
+});
+
 interacties.get("/getplayer", (req, res) => {
     res.send(playerData);
 });
@@ -141,6 +157,12 @@ interacties.get("/getheartrate", (req, res) => {
 
 interacties.get("/getlivechat", (req, res) => {
     res.send(liveChatObject);
+});
+
+interacties.post("/setvalues", (req, res) => {
+    let data = req.body;
+    console.log(data);
+    res.send('Data Received: ' + JSON.stringify(data));
 });
 
 
