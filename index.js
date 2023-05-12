@@ -7,6 +7,7 @@ const fetch = require("node-fetch");
 const puppeteer = require('puppeteer');
 const fs = require("fs");
 const { LiveChat } = require("youtube-chat");
+const { error } = require("console");
 
 var interacties = express();
 
@@ -24,13 +25,9 @@ interacties.use(express.urlencoded({ extended: false }));
 // Fetch settings
 const playerURL = config.scoreSaberProfileLink;
 const settings = { method: 'GET' };
-const liveChat = null;
-try {
-    liveChat = new LiveChat({ channelId: config.youtubeChannelID });
-} catch {
-    liveChatEnabled = false;
-    console.log("LiveChat Error: Are you live?")
-}
+var liveChat = null;
+liveChat = new LiveChat({ channelId: config.youtubeChannelID });
+liveChat.on("error", (error) => console.log("LiveChat Error: Are you live?"));
 
 // Data that gets refreshed
 var playerData;
@@ -61,7 +58,7 @@ async function refreshPlayerData() {
 // Refresh Youtube Live Chat information
 async function refreshLiveChat() {
     if (liveChatEnabled) {
-        const chat = await liveChat.start();
+        var chat = await liveChat.start();
         if (!chat) {
             console.log("Failed to start LiveChat");
             return;
@@ -69,12 +66,11 @@ async function refreshLiveChat() {
             console.log("LiveChat started successfully");
             liveChat.on("chat", (chatItem) => {
                 liveChatObject.liveChat.push(chatItem);
-                console.log(chatItem);
+
+                if (liveChatObject.liveChat.length > 5) {
+                    liveChatObject.liveChat.shift();
+                }
             });
-            if (liveChatObject.liveChat.length > 5)
-            {
-                liveChatObject.liveChat.shift();
-            }
         }
     }
 }
@@ -90,7 +86,12 @@ async function refreshLiveChat() {
         await page.goto(config.pusloidWidgetLink);
 
         // Wait for the span element to appear on the page
-        await page.waitForSelector('span').catch("HR timeout. Not using it?");
+        try {
+            await page.waitForSelector('span').catch("HR timeout. Not using it?");
+        } catch (error) {
+            console.log("HR timeout. Not using it?");
+            return;
+        }
 
         // Find the heart rate information by its element name 
         // (The ID changes on each load, and it's the only span element)
@@ -126,21 +127,41 @@ initData();
 
 // Express GET requests
 interacties.get("/", (req,res) => {  
-    var enableBS = req.query.enableBS, enableFG = req.query.enableFG, enableHR = req.query.enableHR, enableLC = req.query.enableLC;
+    var enableBS = req.query.enableBS, enableSC = req.query.enableSC, enableHR = req.query.enableHR, enableLC = req.query.enableLC;
     if (req.query.enableBS == undefined) {enableBS = true}
-    if (req.query.enableFG == undefined) {enableFG = true}
+    if (req.query.enableSC == undefined) {enableSC = true}
     if (req.query.enableHR == undefined) {enableHR = true}
     if (req.query.enableLC == undefined) {enableLC = true}
     res.render("index", {
         enableBS: enableBS,
-        enableFG: enableFG,
+        enableSC: enableSC,
         enableHR: enableHR,
         enableLC: enableLC
     });
 });
 
-interacties.get("/settings", (req,res) => {  
-    res.render("settings");
+
+// Express GET request sending the user to a settings page
+// Settings page is filled in with the current config values
+interacties.get("/settings", (req, res) => {
+    if (req.query.enableBS == undefined) {req.query.enableBS = config.enableBeatSaber}
+    if (req.query.enableSC == undefined) {req.query.enableSC = config.enableSubscriberCount}
+    if (req.query.enableHR == undefined) {req.query.enableHR = config.enableHeartRate}
+    if (req.query.enableLC == undefined) {req.query.enableLC = config.enableLiveChat}
+    if (req.query.scoreSaberProfileLink == undefined) {req.query.scoreSaberProfileLink = config.scoreSaberProfileLink}
+    if (req.query.youtubeChannelID == undefined) {req.query.youtubeChannelID = config.youtubeChannelID}
+    if (req.query.youtubeAPIKey == undefined) {req.query.youtubeAPIKey = config.youtubeAPIKey}
+    if (req.query.pusloidWidgetLink == undefined) {req.query.pusloidWidgetLink = config.pusloidWidgetLink}
+    res.render("settings", {
+        enableBS: req.query.enableBS,
+        enableSC: req.query.enableSC,
+        enableHR: req.query.enableHR,
+        enableLC: req.query.enableLC,
+        scoreSaberProfileLink: req.query.scoreSaberProfileLink,
+        youtubeChannelID: req.query.youtubeChannelID,
+        youtubeAPIKey: req.query.youtubeAPIKey,
+        pusloidWidgetLink: req.query.pusloidWidgetLink
+    });
 });
 
 interacties.get("/getplayer", (req, res) => {
@@ -159,10 +180,12 @@ interacties.get("/getlivechat", (req, res) => {
     res.send(liveChatObject);
 });
 
+// Express POST request to get data from the settings page form
 interacties.post("/setvalues", (req, res) => {
     let data = req.body;
     console.log(data);
-    res.send('Data Received: ' + JSON.stringify(data));
+    // Send user back to settings page with form filled in
+    res.redirect("/settings");
 });
 
 

@@ -1,4 +1,8 @@
 {
+    "enableHeartRate": true,
+    "enableBeatSaber": true,
+    "enableLiveChat": true,
+    "enableSubscriberCount": true,
     "youtubeChannelID": "",
     "youtubeAPIKey": "",
     "scoreSaberProfileLink": "",

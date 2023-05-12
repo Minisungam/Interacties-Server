@@ -11,8 +11,8 @@ Features may include:
 - [x] Timed animations so everything isn't displayed all the time
 - [x] Modular component use based on parameters set on page call
 - [x] Settings in config file
-- [ ] User interface to toggle/use interactions
-- [ ] Chat integration
+- [ ] User interface to toggle/use interactions and change settings
+- [X] Chat integration
 - [ ] Other interactions done via chat
 
 Installation Requirements:

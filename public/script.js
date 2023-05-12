@@ -9,8 +9,8 @@ var barProgress = 0;
 // Convert enables strings to boolean
 if (enableBS == "false") { enableBS = Boolean(false) }
 else { enableBS = Boolean(true) }
-if (enableFG == "false") { enableFG = Boolean(false) }
-else { enableFG = Boolean(true) }
+if (enableSC == "false") { enableSC = Boolean(false) }
+else { enableSC = Boolean(true) }
 if (enableHR == "false") { enableHR = Boolean(false) }
 else { enableHR = Boolean(true) }
 if (enableLC == "false") { enableLC = Boolean(false) }
@@ -82,7 +82,7 @@ $(document).ready(function() {
     }
 
     // Animate follower goal box
-    if (enableFG) {
+    if (enableSC) {
         const animateFollowerGoal = setInterval(async function() {
             // Boxes moving onto screen
             if ($("#followerGoal").hasClass("animate__backOutDown")) {
