@@ -1,15 +1,18 @@
-// Christopher Magnus 2022
+// Christopher Magnus 2023
 
 // Imports
 const express = require("express");
-const { Template } = require("ejs");
 const fetch = require("node-fetch");
 const puppeteer = require('puppeteer');
 const fs = require("fs");
 const { LiveChat } = require("youtube-chat");
-const { error } = require("console");
 
+// Express Setup
 var interacties = express();
+
+interacties.set("view engine", "ejs");
+interacties.use(express.static("public"));
+interacties.use(express.urlencoded({ extended: false }));
 
 // Enable variables
 var liveChatEnabled = true;
@@ -17,29 +20,21 @@ var liveChatEnabled = true;
 // Read config file
 var config = JSON.parse(fs.readFileSync("./config.json", "UTF-8"));
 
-interacties.set("view engine", "ejs");
-
-interacties.use(express.static("public"));
-interacties.use(express.urlencoded({ extended: false }));
-
 // Fetch settings
-const playerURL = config.scoreSaberProfileLink;
-const settings = { method: 'GET' };
 var liveChat = null;
 liveChat = new LiveChat({ channelId: config.youtubeChannelID });
 liveChat.on("error", (error) => console.log("LiveChat Error: Are you live?"));
 
 // Data that gets refreshed
 var playerData;
-var goalData = { current_amount: 0, target_amount: 15 };
+var goalData = { current_amount: 0, target_amount: config.subscriberGoal };
 var heartRateData = { heartRate: 0 };
 var liveChatObject = { liveChat: [] };
 
 
-
 // Refresh goal data from Youtube
 async function refreshGoalData() {
-    await fetch("https://www.googleapis.com/youtube/v3/channels?id=" + config.youtubeChannelID + "&key=" + config.youtubeAPIKey + "&part=statistics", settings)
+    await fetch("https://www.googleapis.com/youtube/v3/channels?id=" + config.youtubeChannelID + "&key=" + config.youtubeAPIKey + "&part=statistics", { method: 'GET' })
     .then(res => res.json())
     .then((json) => {
         goalData.current_amount = json.items[0].statistics.subscriberCount;
@@ -48,15 +43,15 @@ async function refreshGoalData() {
 
 // Refresh BeatSaver player information
 async function refreshPlayerData() {
-    await fetch(playerURL, settings)
+    await fetch(config.scoreSaberProfileLink, { method: 'GET' })
     .then(res => res.json())
     .then((json) => {
         playerData = json;
     });
 }
 
-// Refresh Youtube Live Chat information
-async function refreshLiveChat() {
+// Initialize the YouTube live chat module
+async function initLiveChat() {
     if (liveChatEnabled) {
         var chat = await liveChat.start();
         if (!chat) {
@@ -77,7 +72,7 @@ async function refreshLiveChat() {
 
 
 // Scrape heart rate information from Pulsoid
-(async () => {
+async function initHeartRate() {
     if (liveChatEnabled) {
         const browser = await puppeteer.launch({ headless: "new" });
         const page = await browser.newPage();
@@ -97,33 +92,24 @@ async function refreshLiveChat() {
         // (The ID changes on each load, and it's the only span element)
         const spans = await page.$$('span');
         let span = spans[0];
-    
+
         // Get the initial value of the element
         heartRateData.heartRate = await span.evaluate(el => el.innerText);
         console.log("HR found, first value: " + heartRateData.heartRate);
-    
+
         // Continuously monitor the element for changes
         setInterval(async () => {
         // Get the new value of the element
         let newValue = await span.evaluate(el => el.innerText);
-    
+
         // Update the internal variable with the new value
         heartRateData.heartRate = newValue;
         }, 100);
-    
+
         // Keep the browser open indefinitely
         await new Promise(() => {});
     }
-  })();
-
-// Initial setup function
-async function initData() {
-    await refreshGoalData();
-    await refreshPlayerData();
-    await refreshLiveChat();
 }
-
-initData();
 
 // Express GET requests
 interacties.get("/", (req,res) => {  
@@ -139,7 +125,6 @@ interacties.get("/", (req,res) => {
         enableLC: enableLC
     });
 });
-
 
 // Express GET request sending the user to a settings page
 // Settings page is filled in with the current config values
@@ -164,6 +149,7 @@ interacties.get("/settings", (req, res) => {
     });
 });
 
+// Express GET requests to send data from the server
 interacties.get("/getplayer", (req, res) => {
     res.send(playerData);
 });
@@ -184,12 +170,12 @@ interacties.get("/getlivechat", (req, res) => {
 interacties.post("/setvalues", (req, res) => {
     let data = req.body;
     console.log(data);
-    // Send user back to settings page with form filled in
+    // Send user back to settings page
     res.redirect("/settings");
 });
 
 
-// Refresh playerdata every minute
+// Refresh ScoreSaber rank data
 const updatePlayerData = setInterval(function() {
     refreshPlayerData();
 }, 60000);
@@ -199,5 +185,13 @@ const updateGoalData = setInterval(function() {
     refreshGoalData();
 }, 15000);
 
+// Initial setup function
+(async () => {
+    await refreshGoalData();
+    await refreshPlayerData();
+    await refreshLiveChat();
+});
+
+// Start the Express server
 interacties.listen(5500);
 console.log("Executed normally: http://localhost:5500/");
