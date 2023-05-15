@@ -39,7 +39,7 @@ p {
     margin: 0px;
 }
 
-#followerGoal {
+#subscriberGoal {
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -58,8 +58,22 @@ p {
     z-index: -1;
     position: absolute;
     height: 100%;
-    background-color: #18a2ee;
     border-radius: 0em 1em 1em 0em;
+    /* animated gradiant */
+    background: linear-gradient(45deg, #18a2ee 0%, #e23c6b 100%);
+    background-size: 400% 400%;
+    animation: gradient 5s ease infinite;
+}
+@keyframes gradient {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
 }
 
 
@@ -76,7 +90,8 @@ p {
     flex: 4;
     display: inline-block;
     font-size: 36px;
-    color: #e23c6b;
+    color: #FFFFFF;
+    text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 }
 
 #heartRate {

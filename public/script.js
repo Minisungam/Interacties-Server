@@ -83,17 +83,17 @@ $(document).ready(function() {
 
     // Animate follower goal box
     if (enableSC) {
-        const animateFollowerGoal = setInterval(async function() {
+        const animateSubscriberGoal = setInterval(async function() {
             // Boxes moving onto screen
-            if ($("#followerGoal").hasClass("animate__backOutDown")) {
-                $("#followerGoal").addClass("animate__backInUp");
-                $("#followerGoal").removeClass("animate__backOutDown");
+            if ($("#subscriberGoal").hasClass("animate__backOutDown")) {
+                $("#subscriberGoal").addClass("animate__backInUp");
+                $("#subscriberGoal").removeClass("animate__backOutDown");
                 fillFollowerBar();
             }
             // Boxes moving off of screen
             else {
-                $("#followerGoal").addClass("animate__backOutDown");
-                $("#followerGoal").removeClass("animate__backInUp");
+                $("#subscriberGoal").addClass("animate__backOutDown");
+                $("#subscriberGoal").removeClass("animate__backInUp");
                 await sleep(90000);
             }
         }, 30000);
@@ -113,14 +113,14 @@ $(document).ready(function() {
 
 // Animation for filling the follower bar
 async function fillFollowerBar() {
-    $("#followerGoal").removeClass("animate__pulse");
+    $("#subscriberGoal").removeClass("animate__pulse");
     await sleep(1200);
     for (let i = 0; i <= goalData.current_amount; i++) {
         $("#goalText").html(`Subscriber Goal ${i}/${goalData.target_amount}`);
         $("#goalProgress").css("width", ((i / goalData.target_amount) * 100) + "%");
         await sleep(30);
     }
-    $("#followerGoal").addClass("animate__pulse");
+    $("#subscriberGoal").addClass("animate__pulse");
 }
 
 // Sleep function
