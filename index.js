@@ -23,7 +23,10 @@ var config = JSON.parse(fs.readFileSync("./config.json", "UTF-8"));
 // Fetch settings
 var liveChat = null;
 liveChat = new LiveChat({ channelId: config.youtubeChannelID });
-liveChat.on("error", (error) => console.log("LiveChat Error: Are you live?"));
+liveChat.on("error", (error) => {
+    console.log("LiveChat Error: Are you live?");
+    liveChatEnabled = false;
+});
 
 // Data that gets refreshed
 var playerData;
@@ -99,11 +102,11 @@ async function initHeartRate() {
 
         // Continuously monitor the element for changes
         setInterval(async () => {
-        // Get the new value of the element
-        let newValue = await span.evaluate(el => el.innerText);
+            // Get the new value of the element
+            let newValue = await span.evaluate(el => el.innerText);
 
-        // Update the internal variable with the new value
-        heartRateData.heartRate = newValue;
+            // Update the internal variable with the new value
+            heartRateData.heartRate = newValue;
         }, 100);
 
         // Keep the browser open indefinitely
@@ -190,6 +193,8 @@ const updateGoalData = setInterval(function() {
     await refreshGoalData();
     await refreshPlayerData();
     await refreshLiveChat();
+    initHeartRate();
+    initLiveChat();
 });
 
 // Start the Express server
