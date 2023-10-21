@@ -4,8 +4,9 @@ This is my first official individual project!
 
 My goal for this is to create a browser based OBS overlay for a livestream.
 
-Features may include:
+The license is quite restrictive \(CC BY-NC-ND 4.0\) at this point because this project is my baby, but will likely be less restrictive once it matures.
 
+## Features:
 - [x] Beat Saber rank pulled from ScoreSaber API
 - [x] Heart-rate scraped from Pulsoid
 - [x] Timed animations
@@ -16,8 +17,16 @@ Features may include:
 - [ ] Other interactions done via chat
 - [ ] Setup instructions
 
-Installation Requirements:
+Features and functionality are subject to change.
+
+## Installation Requirements:
 
 - Node.JS (latest)
 
-Features and functionality are subject to change.
+## Setup
+
+git clone https://github.com/Minisungam/Interacties.git
+cd interacties
+npm install
+cp config_template.json config.json
+npm run devStart
