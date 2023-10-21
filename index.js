@@ -1,4 +1,5 @@
 // Christopher Magnus 2023
+// CC BY-NC-ND 4.0
 
 // Imports
 const express = require("express");
@@ -13,9 +14,6 @@ var interacties = express();
 interacties.set("view engine", "ejs");
 interacties.use(express.static("public"));
 interacties.use(express.urlencoded({ extended: false }));
-
-// Enable variables
-var liveChatEnabled = true;
 
 // Read config file
 var config = JSON.parse(fs.readFileSync("./config.json", "UTF-8"));
@@ -55,7 +53,7 @@ async function refreshPlayerData() {
 
 // Initialize the YouTube live chat module
 async function initLiveChat() {
-    if (liveChatEnabled) {
+    if (config.enableLiveChat) {
         var chat = await liveChat.start();
         if (!chat) {
             console.log("Failed to start LiveChat");
@@ -73,37 +71,38 @@ async function initLiveChat() {
     }
 }
 
-
 // Scrape heart rate information from Pulsoid
 async function initHeartRate() {
-    if (liveChatEnabled) {
+    if (config.enableHeartRate) {
         const browser = await puppeteer.launch({ headless: "new" });
         const page = await browser.newPage();
         page.setDefaultTimeout(0);
 
         await page.goto(config.pusloidWidgetLink);
+        console.log("Navigated to the Pulsoid widget page.");
 
-        // Wait for the span element to appear on the page
+        selector = "text";
+
+        // Wait for the text element to appear on the page
         try {
-            await page.waitForSelector('span').catch("HR timeout. Not using it?");
+            await page.waitForSelector(selector).catch("HR timeout. Not using it?");
         } catch (error) {
             console.log("HR timeout. Not using it?");
             return;
         }
 
         // Find the heart rate information by its element name 
-        // (The ID changes on each load, and it's the only span element)
-        const spans = await page.$$('span');
-        let span = spans[0];
+        // (The ID changes on each load, and it's the only text element)
+        const heartRateElement = await page.$(selector, { timeout: 300 });
 
         // Get the initial value of the element
-        heartRateData.heartRate = await span.evaluate(el => el.innerText);
+        heartRateData.heartRate = await heartRateElement.evaluate(el => el.innerHTML);
         console.log("HR found, first value: " + heartRateData.heartRate);
 
         // Continuously monitor the element for changes
         setInterval(async () => {
             // Get the new value of the element
-            let newValue = await span.evaluate(el => el.innerText);
+            let newValue = await heartRateElement.evaluate(el => el.innerHTML);
 
             // Update the internal variable with the new value
             heartRateData.heartRate = newValue;
@@ -189,14 +188,15 @@ const updateGoalData = setInterval(function() {
 }, 15000);
 
 // Initial setup function
-(async () => {
-    await refreshGoalData();
-    await refreshPlayerData();
-    await refreshLiveChat();
+async function setup() {
     initHeartRate();
     initLiveChat();
-});
+    await refreshGoalData();
+    await refreshPlayerData();
+    //await refreshLiveChat();
+};
 
 // Start the Express server
 interacties.listen(5500);
+setup();
 console.log("Executed normally: http://localhost:5500/");

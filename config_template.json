@@ -3,6 +3,7 @@
     "enableBeatSaber": true,
     "enableLiveChat": true,
     "enableSubscriberCount": true,
+    "subscriberGoal": 0,
     "youtubeChannelID": "",
     "youtubeAPIKey": "",
     "scoreSaberProfileLink": "",
