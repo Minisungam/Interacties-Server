@@ -24,9 +24,24 @@ Features and functionality are subject to change.
 - Node.JS (latest)
 
 ## Setup
+First, to get all the files, enter these commands into your command line:
+```
+# Clone the repository
+$ git clone https://github.com/Minisungam/Interacties.git
 
-git clone https://github.com/Minisungam/Interacties.git
-cd interacties
-npm install
-cp config_template.json config.json
-npm run devStart
+# Move into the directory
+$ cd interacties
+
+# Install dependencies
+$ npm install
+```
+Next, run the command below to create the config.json file, then open it up in a text editor and fill in your information.
+```
+# Create the config file from the template
+$ cp config_template.json config.json
+```
+Finally, we can start the server.
+```
+# Run the development server
+$ npm run devStart
+```
