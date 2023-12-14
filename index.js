@@ -6,7 +6,12 @@ const express = require("express");
 const fetch = require("node-fetch");
 const puppeteer = require('puppeteer');
 const fs = require("fs");
-const { LiveChat } = require("youtube-chat");
+const util = require('util');
+const { Masterchat, stringify } = require("@stu43005/masterchat");
+const textToSpeech = require('@google-cloud/text-to-speech');
+const Queue = require("./queue.js");
+
+process.env.GOOGLE_APPLICATION_CREDENTIALS = "google_auth.json";
 
 // Express Setup
 var interacties = express();
@@ -18,20 +23,12 @@ interacties.use(express.urlencoded({ extended: false }));
 // Read config file
 var config = JSON.parse(fs.readFileSync("./config.json", "UTF-8"));
 
-// Fetch settings
-var liveChat = null;
-liveChat = new LiveChat({ channelId: config.youtubeChannelID });
-liveChat.on("error", (error) => {
-    console.log("LiveChat Error: Are you live?");
-    liveChatEnabled = false;
-});
-
 // Data that gets refreshed
 var playerData;
 var goalData = { current_amount: 0, target_amount: config.subscriberGoal };
 var heartRateData = { heartRate: 0 };
 var liveChatObject = { liveChat: [] };
-
+var ttsAvailable = false;
 
 // Refresh goal data from Youtube
 async function refreshGoalData() {
@@ -51,23 +48,89 @@ async function refreshPlayerData() {
     });
 }
 
+// TTS Function
+async function getTTS(message) {
+    const ttsClient = new textToSpeech.TextToSpeechClient();
+  
+    // Construct the request
+    const request = {
+      input: {text: message},
+      // Select the language and SSML voice gender (optional)
+      voice: {name: 'en-US-Studio-O', languageCode: 'en-US', ssmlGender: 'FEMALE'},
+      // Select the type of audio encoding
+      audioConfig: {audioEncoding: 'MP3'},
+    };
+  
+    // Performs the text-to-speech request
+    const [response] = await ttsClient.synthesizeSpeech(request);
+
+    // Write the binary audio content to a local file
+    const writeFile = util.promisify(fs.writeFile);
+    await writeFile('output.mp3', response.audioContent, 'binary');
+    ttsAvailable = true;
+
+    console.log('Audio content written to file: output.mp3');
+  }
+
+chatQueue = new Queue();
+const ttsQueue =  async () => {
+    console.log("TTS queue handler started.");
+    while (true) {
+        if (!ttsAvailable && !chatQueue.isEmpty()) {
+            console.log("TTS queue not empty, playing next message.");
+            var chat = chatQueue.dequeue();
+            await getTTS(chat);
+        }
+
+        await sleep(1000);
+    }   
+}
+
 // Initialize the YouTube live chat module
 async function initLiveChat() {
     if (config.enableLiveChat) {
-        var chat = await liveChat.start();
-        if (!chat) {
-            console.log("Failed to start LiveChat");
-            return;
-        } else {
-            console.log("LiveChat started successfully");
-            liveChat.on("chat", (chatItem) => {
-                liveChatObject.liveChat.push(chatItem);
-
-                if (liveChatObject.liveChat.length > 5) {
-                    liveChatObject.liveChat.shift();
-                }
-            });
-        }
+        const mc = await Masterchat.init("udf18vXkxEI");
+        
+        mc.on("chat", (chat) => {
+            console.log(chat.authorName + ": " + stringify(chat.message));
+            simpleChat = { authorName: chat.authorName, message: stringify(chat.message) };
+            liveChatObject.liveChat.push(simpleChat);
+            chatQueue.enqueue(simpleChat.authorName + " said, " + simpleChat.message);
+          });
+          
+        // Listen for any events
+        //   See below for a list of available action types
+        mc.on("actions", (actions) => {
+            const chats = actions.filter(
+                (action) => action.type === "addChatItemAction"
+            );
+            const superChats = actions.filter(
+                (action) => action.type === "addSuperChatItemAction"
+            );
+            const superStickers = actions.filter(
+                (action) => action.type === "addSuperStickerItemAction"
+            );
+        });
+        
+        // Handle errors
+        mc.on("error", (err) => {
+            console.log(err.code);
+            // "disabled" => Live chat is disabled
+            // "membersOnly" => No permission (members-only)
+            // "private" => No permission (private video)
+            // "unavailable" => Deleted OR wrong video id
+            // "unarchived" => Live stream recording is not available
+            // "denied" => Access denied (429)
+            // "invalid" => Invalid request
+        });
+        
+        // Handle end event
+        mc.on("end", () => {
+            console.log("Live stream has ended");
+        });
+        
+        // Start polling live chat API
+        mc.listen();
     }
 }
 
@@ -168,6 +231,17 @@ interacties.get("/getlivechat", (req, res) => {
     res.send(liveChatObject);
 });
 
+interacties.get("/getTTS", (req, res) => {
+    if (ttsAvailable) {
+        console.log("TTS requested, sending file.");
+        res.download("output.mp3");
+        ttsAvailable = false;
+    }
+    else {
+        res.send(ttsAvailable);
+    }
+});
+
 // Express POST request to get data from the settings page form
 interacties.post("/setvalues", (req, res) => {
     let data = req.body;
@@ -187,13 +261,18 @@ const updateGoalData = setInterval(function() {
     refreshGoalData();
 }, 15000);
 
+// Sleep function
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 // Initial setup function
 async function setup() {
     initHeartRate();
     initLiveChat();
     await refreshGoalData();
     await refreshPlayerData();
-    //await refreshLiveChat();
+    ttsQueue();
 };
 
 // Start the Express server

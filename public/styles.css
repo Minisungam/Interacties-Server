@@ -39,6 +39,22 @@ p {
     margin: 0px;
 }
 
+.TTSBox {
+    /* display: flex; */
+    display: hidden;
+    flex-direction: row;
+    align-items: center;
+    border: 2px solid black;
+    background-color: #262626;
+    border-radius: 1em;
+    width: 600px;
+    height: 80px;
+    position: absolute;
+    overflow: hidden;
+    top: 1em;
+    left: calc(50% - 300px);
+}
+
 #subscriberGoal {
     display: flex;
     flex-direction: row;

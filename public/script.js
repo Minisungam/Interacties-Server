@@ -5,6 +5,10 @@ var liveChatObject;
 var oldLiveChatObject;
 var liveChatHTML;
 var barProgress = 0;
+var playingAudio = false;
+var audio;
+const audioCTX = new AudioContext();
+const audioAnalyzer = audioCTX.createAnalyser();
 
 // Convert enables strings to boolean
 if (enableBS == "false") { enableBS = Boolean(false) }
@@ -38,6 +42,12 @@ const fetchHeartRate = setInterval(function() {
     });
 }, 100);
 
+const fetchTTS = setInterval(function() {
+    if (!playingAudio) {
+        getTTSAudio();
+    }
+}, 100);
+
 const fetchLiveChat = setInterval(function() {
     $.getJSON('/getlivechat', function(json) {
         liveChatObject = json;
@@ -52,7 +62,31 @@ const fetchLiveChat = setInterval(function() {
 }, 250);
 
 function displayChat(item, index, arr) {
-    liveChatHTML += "<div class=\"chatMessage\"><p class=\"chatUserName\">" + item.author.name + ": </p><p class=\"chatText\">" + item.message[0].text + "</p></div>";
+    liveChatHTML += "<div class=\"chatMessage\"><p class=\"chatUserName\">" + item.authorName + ": </p><p class=\"chatText\">" + item.message + "</p></div>";
+}
+
+function getTTSAudio() {
+    try {
+        fetch('/getTTS')
+                .then(response => { if (response.json == false) { throw new Error("No TTS audio"); } else { response.arrayBuffer(); } })
+                .then(arrayBuffer => audioCTX.decodeAudioData(arrayBuffer))
+                .then(decodedData => {
+                    audio = decodedData;
+                    playingAudio = true;
+                    playback();
+                })
+                .catch(err => console.log(err));
+    } catch {
+        return;
+    }
+}    
+
+
+function playback() {
+    const playSound = audioCTX.createBufferSource();
+    playSound.buffer = audio;
+    playSound.connect(audioCTX.destination);
+    playSound.start(audioCTX.currentTime);
 }
 
 init();
@@ -113,17 +147,22 @@ $(document).ready(function() {
 
 // Animation for filling the follower bar
 async function fillFollowerBar() {
-    $("#subscriberGoal").removeClass("animate__pulse");
+    $("#subscriberGoal").addClass("animate__pulse");
     await sleep(1200);
     for (let i = 0; i <= goalData.current_amount; i++) {
         $("#goalText").html(`Subscriber Goal ${i}/${goalData.target_amount}`);
         $("#goalProgress").css("width", ((i / goalData.target_amount) * 100) + "%");
         await sleep(30);
     }
-    $("#subscriberGoal").addClass("animate__pulse");
+    $("#subscriberGoal").removeClass("animate__pulse");
 }
 
 // Sleep function
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
+
+audio.addEventListener('ended', function() {
+    playingAudio = false;
+    console.log("Audio ended");
+});
