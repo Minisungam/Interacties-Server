@@ -6,7 +6,12 @@
     "subscriberGoal": 0,
     "youtubeChannelID": "",
     "youtubeAPIKey": "",
-    "googleTTSKey": "",
     "scoreSaberProfileLink": "",
-    "pusloidWidgetLink": ""
+    "pusloidWidgetLink": "",
+    "savedSettings": {
+        "enableBS": true,
+        "enableHR": true,
+        "enableSC": true,
+        "enableLC": true
+    }
 }

@@ -13,6 +13,7 @@ body {
 }
 
 #rankBox {
+    display: none;
     border: 2px solid black;
     max-width: max-content;
     max-height: max-content;
@@ -40,8 +41,7 @@ p {
 }
 
 .TTSBox {
-    /* display: flex; */
-    display: hidden;
+    display: none;
     flex-direction: row;
     align-items: center;
     border: 2px solid black;
@@ -56,7 +56,7 @@ p {
 }
 
 #subscriberGoal {
-    display: flex;
+    display: none;
     flex-direction: row;
     align-items: center;
     border: 2px solid black;
@@ -105,12 +105,13 @@ p {
 #goalText {
     flex: 4;
     display: inline-block;
-    font-size: 36px;
+    font-size: 34px;
     color: #FFFFFF;
     text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 }
 
 #heartRate {
+    display: none;
     position: absolute;
     overflow: auto;
     left: 0.5em;
@@ -132,7 +133,7 @@ p {
 #liveChatBox {
     position: absolute;
     overflow: hidden;
-    display: flex;
+    display: none;
     flex-direction: column-reverse;
     left: 0.5em;
     bottom: 0.5em;

@@ -1,81 +1,58 @@
-var playerData;
+var enableBS, enableHR, enableSC, enableLC;
 var goalData;
 var heartRate;
-var liveChatObject;
-var oldLiveChatObject;
-var liveChatHTML;
 var barProgress = 0;
 var playingAudio = false;
-var audio;
 const audioCTX = new AudioContext();
 const audioAnalyzer = audioCTX.createAnalyser();
 
-// Convert enables strings to boolean
-if (enableBS == "false") { enableBS = Boolean(false) }
-else { enableBS = Boolean(true) }
-if (enableSC == "false") { enableSC = Boolean(false) }
-else { enableSC = Boolean(true) }
-if (enableHR == "false") { enableHR = Boolean(false) }
-else { enableHR = Boolean(true) }
-if (enableLC == "false") { enableLC = Boolean(false) }
-else { enableLC = Boolean(true) }
-
-// Fetch playerData from server on an interval
-const fetchPlayerData = setInterval(function() {
-    $.getJSON('/getplayer', function(json) {
-        playerData = json;
-        $("#disUserName").html(playerData.name);
-        $("#disRank").html(playerData.rank);
-    });
-}, 1000);
-
-const fetchGoalData = setInterval(function() {
-    $.getJSON('/getgoal', function(json) {
-        goalData = json;
-    });
-}, 1000);
-
-const fetchHeartRate = setInterval(function() {
-    $.getJSON('/getheartrate', function(json) {
-        heartRate = json.heartRate;
-        $("#heartRateNumber").html(heartRate);
-    });
-}, 100);
-
-const fetchTTS = setInterval(function() {
-    if (!playingAudio) {
-        getTTSAudio();
+const socket = io("http://localhost:5500", {
+    query: {
+        data: JSON.stringify({client: "overlay"})
     }
-}, 100);
+});
 
-const fetchLiveChat = setInterval(function() {
-    $.getJSON('/getlivechat', function(json) {
-        liveChatObject = json;
-        if (liveChatObject !== oldLiveChatObject)
-        {
-            liveChatHTML = "";
-            liveChatObject.liveChat.forEach(displayChat);
-            $("#liveChat").html(liveChatHTML);
-            oldLiveChatObject = liveChatObject;
-        }
-    });
-}, 250);
+socket.on("liveChat", ({authorName, message }) => {
+    displayChat(authorName, message);
+});
 
-function displayChat(item, index, arr) {
-    liveChatHTML += "<div class=\"chatMessage\"><p class=\"chatUserName\">" + item.authorName + ": </p><p class=\"chatText\">" + item.message + "</p></div>";
+socket.on("heartRate", (heartRate) => {
+    setHeartRate(heartRate);
+});
+
+function setHeartRate(heartRate) { 
+    $("#heartRateNumber").html(heartRate);
+}
+
+function setPlayerData(playerData) {
+    $("#disUserName").html(playerData.name);
+    $("#disRank").html(playerData.rank);
+};
+
+function displayChat(authorName, message) {
+    liveChatHTML = $("#liveChat").html();
+    liveChatHTML += "<div class=\"chatMessage\"><p class=\"chatUserName\">" + authorName + ": </p><p class=\"chatText\">" + message + "</p></div>";
+    $("#liveChat").html(liveChatHTML);
 }
 
 function getTTSAudio() {
     try {
         fetch('/getTTS')
-                .then(response => { if (response.json == false) { throw new Error("No TTS audio"); } else { response.arrayBuffer(); } })
+                .then(response => { 
+                    decodedResponse = response.json;
+                    if (decodedResponse.ttsAvailable == false)
+                        { 
+                            throw new Error("No TTS audio");
+                    } else { 
+                            return response.arrayBuffer(); 
+                        } 
+                    })
                 .then(arrayBuffer => audioCTX.decodeAudioData(arrayBuffer))
                 .then(decodedData => {
                     audio = decodedData;
-                    playingAudio = true;
                     playback();
                 })
-                .catch(err => console.log(err));
+                .catch(err => () => { return });
     } catch {
         return;
     }
@@ -84,9 +61,17 @@ function getTTSAudio() {
 
 function playback() {
     const playSound = audioCTX.createBufferSource();
+    var audio;
     playSound.buffer = audio;
+
+    audio.addEventListener('ended', function() {
+        playingAudio = false;
+        console.log("Audio ended");
+    });
+
     playSound.connect(audioCTX.destination);
     playSound.start(audioCTX.currentTime);
+    playingAudio = true;
 }
 
 init();
@@ -96,20 +81,64 @@ async function init() {
     fillFollowerBar();
 }
 
+function showRankBox() {
+    $("#rankBox").addClass("animate__backInRight");
+    $("#rankBox").removeClass("animate__backOutRight");
+}
 
-$(document).ready(function() {
+function hideRankBox() {
+    $("#rankBox").addClass("animate__backOutRight");
+    $("#rankBox").removeClass("animate__backInRight");
+}
+
+function showSubscriberGoal() {
+    $("#subscriberGoal").addClass("animate__backInUp");
+    $("#subscriberGoal").removeClass("animate__backOutDown");
+}
+
+function hideSubscriberGoal() {
+    $("#subscriberGoal").addClass("animate__backOutDown");
+    $("#subscriberGoal").removeClass("animate__backInUp");
+}
+
+$(document).ready(() => {
+    socket.on("initData", (data) => {
+        setPlayerData(data.playerData);
+        goalData = data.goalData;
+        setHeartRate(data.heartRate);
+        enableBS = data.config.enableBS;
+        enableHR = data.config.enableHR;
+        enableSC = data.config.enableSC;
+        enableLC = data.config.enableLC;
+
+        if (enableBS) {
+            $("#rankBox").css("display", "flex");
+        }
+        if (enableSC) {
+            $("#subscriberGoal").css("display", "flex");
+        }
+        if (enableLC) {
+            $("#liveChatBox").css("display", "flex");
+        }
+        if (enableHR) {
+            $("#heartRate").css("display", "flex");
+        }
+        if (enableLC && enableHR) {
+            $("#heartRate").css("bottom", "1.6em");
+        }
+    });
+
+
     // Animate rankBox
     if (enableBS) {
         const animateRankBox = setInterval(async function() {
             // Boxes moving onto screen
             if ($("#rankBox").hasClass("animate__backOutRight")) {
-                $("#rankBox").addClass("animate__backInRight");
-                $("#rankBox").removeClass("animate__backOutRight");
+                showRankBox();
             }
             // Boxes moving off of screen
             else {
-                $("#rankBox").addClass("animate__backOutRight");
-                $("#rankBox").removeClass("animate__backInRight");
+                hideRankBox();
                 await sleep(90000);
             }
         }, 30000);
@@ -120,28 +149,16 @@ $(document).ready(function() {
         const animateSubscriberGoal = setInterval(async function() {
             // Boxes moving onto screen
             if ($("#subscriberGoal").hasClass("animate__backOutDown")) {
-                $("#subscriberGoal").addClass("animate__backInUp");
-                $("#subscriberGoal").removeClass("animate__backOutDown");
+                showSubscriberGoal();
+                await sleep(400)
                 fillFollowerBar();
             }
             // Boxes moving off of screen
             else {
-                $("#subscriberGoal").addClass("animate__backOutDown");
-                $("#subscriberGoal").removeClass("animate__backInUp");
+                hideSubscriberGoal();
                 await sleep(90000);
             }
         }, 30000);
-    }
-
-    // Hide / show the heart rate monitor
-    if (!enableHR) {
-        $("#heartRate").css("display", "none");
-    }
-
-    if (enableLC) {
-        $("#heartRate").css("bottom", "1.6em");
-    } else {
-        $("#liveChatBox").css("display", "none");
     }
 });
 
@@ -160,9 +177,4 @@ async function fillFollowerBar() {
 // Sleep function
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
-  }
-
-audio.addEventListener('ended', function() {
-    playingAudio = false;
-    console.log("Audio ended");
-});
+}
