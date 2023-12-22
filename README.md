@@ -15,7 +15,7 @@ The license is quite restrictive \(CC BY-NC-ND 4.0\) at this point because this 
 - [X] Chat integration
 - [ ] User interface to toggle/use interactions and change settings
 - [ ] Other interactions done via chat
-- [ ] Setup instructions
+- [X] Setup instructions
 
 Features and functionality are subject to change.
 

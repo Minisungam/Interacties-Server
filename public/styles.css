@@ -13,6 +13,7 @@ body {
 }
 
 #rankBox {
+    display: none;
     border: 2px solid black;
     max-width: max-content;
     max-height: max-content;
@@ -39,8 +40,24 @@ p {
     margin: 0px;
 }
 
+.TTSBox {
+    /* display: flex; */
+    display: hidden;
+    flex-direction: row;
+    align-items: center;
+    border: 2px solid black;
+    background-color: #262626;
+    border-radius: 1em;
+    width: 600px;
+    height: 80px;
+    position: absolute;
+    overflow: hidden;
+    top: 1em;
+    left: calc(50% - 300px);
+}
+
 #subscriberGoal {
-    display: flex;
+    display: none;
     flex-direction: row;
     align-items: center;
     border: 2px solid black;
@@ -89,7 +106,7 @@ p {
 #goalText {
     flex: 4;
     display: inline-block;
-    font-size: 36px;
+    font-size: 34px;
     color: #FFFFFF;
     text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 }

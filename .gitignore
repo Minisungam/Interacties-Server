@@ -1,2 +1,4 @@
 node_modules/
 config.json
+google_auth.json
+output.mp3
