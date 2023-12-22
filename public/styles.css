@@ -41,7 +41,8 @@ p {
 }
 
 .TTSBox {
-    display: none;
+    /* display: flex; */
+    display: hidden;
     flex-direction: row;
     align-items: center;
     border: 2px solid black;
@@ -111,7 +112,6 @@ p {
 }
 
 #heartRate {
-    display: none;
     position: absolute;
     overflow: auto;
     left: 0.5em;
@@ -133,7 +133,7 @@ p {
 #liveChatBox {
     position: absolute;
     overflow: hidden;
-    display: none;
+    display: flex;
     flex-direction: column-reverse;
     left: 0.5em;
     bottom: 0.5em;

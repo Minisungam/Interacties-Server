@@ -6,14 +6,12 @@ const fetch = require("node-fetch");
 // Initialize the YouTube live chat module
 async function initLiveChat(io) {
     if (data.config.enableLiveChat) {
-        const mc = await Masterchat.init("udf18vXkxEI");
+        const mc = await Masterchat.init("4-628Ysk5ec");
         
         mc.on("chat", (chat) => {
-            let simpleChat = chat.authorName + ": " + stringify(chat.message);
-            console.log("Emitted message: " + simpleChat);
             data.liveChatHistory.push( { "authorName": chat.authorName, "message": stringify(chat.message) });
             io.emit("liveChat", { "authorName": chat.authorName, "message": stringify(chat.message) });
-            chatQueue.enqueue(chat.authorName + " said, " + stringify(chat.message));
+            data.ttsQueue.enqueue(chat.authorName + " said, " + stringify(chat.message));
         });
           
         // Listen for any events
@@ -79,6 +77,7 @@ async function initHeartRate(io) {
         // Get the initial value of the element
         data.heartRate = await heartRateElement.evaluate(el => el.innerHTML);
         console.log("HR found, first value: " + data.heartRate);
+        io.emit("heartRate", data.heartRate);
 
         // Continuously monitor the element for changes
         while (data.config.enableHeartRate) {

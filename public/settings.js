@@ -21,6 +21,8 @@ socket.on("connect", () => {
 });
 
 socket.on("initSettingsData", (data) => {
+    console.log(data);
+
     config.enableBS = data.savedSettings.enableBS;
     config.enableSC = data.savedSettings.enableSC;
     config.enableHR = data.savedSettings.enableHR;
@@ -44,7 +46,7 @@ socket.on("initSettingsData", (data) => {
 
 function submitData() {
     console.log("Socket state:", socket ? (socket.connected ? "Connected" : "Connecting") : "Not initialized");
-    
+
     config.enableBS = $("#beat-saber").prop("checked");
     config.enableHR = $("#heart-rate").prop("checked");
     config.enableSC = $("#subscriber-count").prop("checked");

@@ -40,29 +40,32 @@ async function getTTS(message) {
       // Select the type of audio encoding
       audioConfig: {audioEncoding: 'MP3'},
     };
-  
-    // Performs the text-to-speech request
-    const [response] = await ttsClient.synthesizeSpeech(request);
 
-    // Write the binary audio content to a local file
-    const writeFile = util.promisify(fs.writeFile);
-    await writeFile('output.mp3', response.audioContent, 'binary');
-
-    console.log('Audio content written to file: output.mp3');
+    try {
+        // Performs the text-to-speech request
+        const [response] = await ttsClient.synthesizeSpeech(request);
+        return response.audioContent;
+    } catch (error) {
+        console.log(error);
+        return false;
+    }
 }
 
-chatQueue = new Queue();
-const ttsQueue =  async () => {
-    console.log("TTS queue handler started.");
-    while (true) {
-        if (!chatQueue.isEmpty()) {
-            console.log("TTS queue not empty, playing next message.");
-            var chat = chatQueue.dequeue();
-            await getTTS(chat);
+async function processTTSQueue() {
+    while(true) {
+        if (!data.ttsQueue.isEmpty() && !data.ttsPlaying) {
+            console.log("TTS queue not empty, sending next message.");
+            var chat = data.ttsQueue.dequeue();
+            let tts = await getTTS(chat);
+            if (tts) {
+                io.emit("ttsReady", { chat: chat, mp3: tts }, {binary: true});
+                data.ttsPlaying = true;
+            } else {
+                console.log("TTS failed, skipping.");
+            }
         }
-
         await sleep(1000);
-    }   
+    }
 }
 
 // Express GET requests
@@ -94,7 +97,7 @@ io.on('connection', (socket) => {
             "playerData": data.playerData, 
             "goalData": data.goalData,
             "heartRate": data.heartRate,
-            "config": data.config,
+            "config": data.config.savedSettings,
         });
         data.liveChatHistory.forEach(element => {
             socket.emit("liveChat", element);
@@ -105,17 +108,25 @@ io.on('connection', (socket) => {
         console.log("Settings updated.");
         console.log(updatedData);
     
-        data.config.savedSettings.enableBS = updatedData.enableBS;
-        data.config.savedSettings.enableHR = updatedData.enableHR;
-        data.config.savedSettings.enableSC = updatedData.enableSC;
-        data.config.savedSettings.enableLC = updatedData.enableLC;
-        data.subscriberGoal = updatedData.subscriberGoal;
+        data.config.savedSettings.enableBS = Boolean(updatedData.enableBS);
+        data.config.savedSettings.enableHR = Boolean(updatedData.enableHR);
+        data.config.savedSettings.enableSC = Boolean(updatedData.enableSC);
+        data.config.savedSettings.enableLC = Boolean(updatedData.enableLC);
+        if (data.subscriberGoal != Number(updatedData.subscriberGoal)) {
+            io.emit("goalDataUpdate", { "current_amount": data.goalData.current_amount, "target_amount": Number(updatedData.subscriberGoal) });
+        }
+        data.subscriberGoal = Number(updatedData.subscriberGoal);
         data.youtubeChannelID = updatedData.youtubeChannelID;
         data.youtubeAPIKey = updatedData.youtubeAPIKey;
         data.scoreSaberProfileLink = updatedData.scoreSaberProfileLink;
         data.pusloidWidgetLink = updatedData.pusloidWidgetLink;
 
         saveSettings();
+    });
+
+    socket.on('ttsEnded', () => {
+        console.log("TTS ended.")
+        data.ttsPlaying = false;
     });
 });
 
@@ -142,10 +153,10 @@ function sleep(ms) {
 // Initial setup function
 function setup() {
     initHeartRate(io);
-    initLiveChat(io);
     refreshGoalData();
     refreshPlayerData();
-    ttsQueue();
+    initLiveChat(io);
+    processTTSQueue();
 };
 
 function saveSettings() {
@@ -160,15 +171,19 @@ function saveSettings() {
         "scoreSaberProfileLink": data.scoreSaberProfileLink,
         "pusloidWidgetLink": data.pusloidWidgetLink,
         "savedSettings": {
-            "enableBS": data.config.savedSettings.enableHR,
-            "enableHR": data.config.savedSettings.enableBS,
-            "enableSC": data.config.savedSettings.enableLC,
-            "enableLC": data.config.savedSettings.enableSC
+            "enableBS": data.config.savedSettings.enableBS,
+            "enableHR": data.config.savedSettings.enableHR,
+            "enableSC": data.config.savedSettings.enableSC,
+            "enableLC": data.config.savedSettings.enableLC
         }
     };
 
-    fs.writeFileSync("./config.json", JSON.stringify(config));
-    console.log("Settings saved to disk.");
+    try {
+        fs.writeFileSync("./config.json", JSON.stringify(config));
+        console.log("Settings saved to disk.");
+    } catch (err) {
+        console.log(err);
+    }
 }
 
 // Start the Express server

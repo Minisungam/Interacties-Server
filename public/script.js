@@ -1,25 +1,80 @@
 var enableBS, enableHR, enableSC, enableLC;
 var goalData;
 var heartRate;
-var barProgress = 0;
 var playingAudio = false;
-const audioCTX = new AudioContext();
-const audioAnalyzer = audioCTX.createAnalyser();
+var offScreenTime = 90000;
 
+/* Socket setup */
 const socket = io("http://localhost:5500", {
     query: {
         data: JSON.stringify({client: "overlay"})
     }
 });
+/********* Socket events *********/
 
+// Socket event for initializing the data on connect
+socket.on("initData", (data) => {
+    setPlayerData(data.playerData);
+    goalData = data.goalData;
+    setHeartRate(data.heartRate);
+    enableBS = data.config.enableBS;
+    enableHR = data.config.enableHR;
+    enableSC = data.config.enableSC;
+    enableLC = data.config.enableLC;
+
+    if (enableBS) {
+        console.log("Beat Saber enabled.");
+        $("#rankBox").css("display", "block");
+    }
+    if (enableSC) {
+        console.log("Subscriber count enabled.");
+        $("#subscriberGoal").css("display", "flex");
+    }
+    if (enableLC) {
+        console.log("Live chat enabled.");
+        $("#liveChatBox").css("display", "flex");
+    }
+    if (enableHR) {
+        console.log("Heart rate enabled.");
+        $("#heartRate").css("display", "block");
+    }
+    if (enableLC && enableHR) {
+        $("#heartRate").css("bottom", "1.6em");
+    }
+});
+
+// Socket event for recieving live chat messages
 socket.on("liveChat", ({authorName, message }) => {
     displayChat(authorName, message);
 });
 
+// Socket event for recieving the heart rate
 socket.on("heartRate", (heartRate) => {
     setHeartRate(heartRate);
 });
 
+// Socket event for recieving tts messages
+socket.on("ttsReady", ({chat, mp3})  => {
+    try {
+        const audio = new Audio();
+        const mp3Blob = new Blob([mp3], {type: "audio/mp3"});
+        audio.src = URL.createObjectURL(mp3Blob);
+
+        audio.onended = () => {
+            socket.emit("ttsEnded");
+        }
+
+        audio.play();
+    } catch (error) {
+        console.log(error);
+    }
+    
+    console.log("TTS playing: " + chat);
+});
+/********* End socket events *********/
+
+
+/********* Settings page socket events *********/
 function setHeartRate(heartRate) { 
     $("#heartRateNumber").html(heartRate);
 }
@@ -34,133 +89,52 @@ function displayChat(authorName, message) {
     liveChatHTML += "<div class=\"chatMessage\"><p class=\"chatUserName\">" + authorName + ": </p><p class=\"chatText\">" + message + "</p></div>";
     $("#liveChat").html(liveChatHTML);
 }
-
-function getTTSAudio() {
-    try {
-        fetch('/getTTS')
-                .then(response => { 
-                    decodedResponse = response.json;
-                    if (decodedResponse.ttsAvailable == false)
-                        { 
-                            throw new Error("No TTS audio");
-                    } else { 
-                            return response.arrayBuffer(); 
-                        } 
-                    })
-                .then(arrayBuffer => audioCTX.decodeAudioData(arrayBuffer))
-                .then(decodedData => {
-                    audio = decodedData;
-                    playback();
-                })
-                .catch(err => () => { return });
-    } catch {
-        return;
-    }
-}    
+/********* End settings page socket events *********/
 
 
-function playback() {
-    const playSound = audioCTX.createBufferSource();
-    var audio;
-    playSound.buffer = audio;
+/********* Animation functions *********/
 
-    audio.addEventListener('ended', function() {
-        playingAudio = false;
-        console.log("Audio ended");
-    });
-
-    playSound.connect(audioCTX.destination);
-    playSound.start(audioCTX.currentTime);
-    playingAudio = true;
-}
-
-init();
-
-async function init() {
-    await sleep(1200);
-    fillFollowerBar();
-}
-
-function showRankBox() {
+// Animation for showing the rank box
+async function showRankBox() {
     $("#rankBox").addClass("animate__backInRight");
     $("#rankBox").removeClass("animate__backOutRight");
+    await sleep(offScreenTime / 3);
+    hideRankBox();
 }
 
+// Animation for hiding the rank box
 function hideRankBox() {
     $("#rankBox").addClass("animate__backOutRight");
     $("#rankBox").removeClass("animate__backInRight");
 }
 
-function showSubscriberGoal() {
+// Animation for showing the subscriber goal
+async function showSubscriberGoal() {
     $("#subscriberGoal").addClass("animate__backInUp");
     $("#subscriberGoal").removeClass("animate__backOutDown");
+    await sleep(offScreenTime / 3);
+    hideSubscriberGoal();
 }
 
+// Animation for hiding the subscriber goal
 function hideSubscriberGoal() {
     $("#subscriberGoal").addClass("animate__backOutDown");
     $("#subscriberGoal").removeClass("animate__backInUp");
 }
 
-$(document).ready(() => {
-    socket.on("initData", (data) => {
-        setPlayerData(data.playerData);
-        goalData = data.goalData;
-        setHeartRate(data.heartRate);
-        enableBS = data.config.enableBS;
-        enableHR = data.config.enableHR;
-        enableSC = data.config.enableSC;
-        enableLC = data.config.enableLC;
+// Controller for the subscriber goal animation
+async function subscriberGoal() {
+    await showSubscriberGoal();
+    await sleep(offScreenTime);
+    subscriberGoal();
+}
 
-        if (enableBS) {
-            $("#rankBox").css("display", "flex");
-        }
-        if (enableSC) {
-            $("#subscriberGoal").css("display", "flex");
-        }
-        if (enableLC) {
-            $("#liveChatBox").css("display", "flex");
-        }
-        if (enableHR) {
-            $("#heartRate").css("display", "flex");
-        }
-        if (enableLC && enableHR) {
-            $("#heartRate").css("bottom", "1.6em");
-        }
-    });
-
-
-    // Animate rankBox
-    if (enableBS) {
-        const animateRankBox = setInterval(async function() {
-            // Boxes moving onto screen
-            if ($("#rankBox").hasClass("animate__backOutRight")) {
-                showRankBox();
-            }
-            // Boxes moving off of screen
-            else {
-                hideRankBox();
-                await sleep(90000);
-            }
-        }, 30000);
-    }
-
-    // Animate follower goal box
-    if (enableSC) {
-        const animateSubscriberGoal = setInterval(async function() {
-            // Boxes moving onto screen
-            if ($("#subscriberGoal").hasClass("animate__backOutDown")) {
-                showSubscriberGoal();
-                await sleep(400)
-                fillFollowerBar();
-            }
-            // Boxes moving off of screen
-            else {
-                hideSubscriberGoal();
-                await sleep(90000);
-            }
-        }, 30000);
-    }
-});
+// Controller for the rank box animation
+async function rankBox() {
+    await showRankBox();
+    await sleep(offScreenTime);
+    rankBox();
+}
 
 // Animation for filling the follower bar
 async function fillFollowerBar() {
@@ -173,8 +147,18 @@ async function fillFollowerBar() {
     }
     $("#subscriberGoal").removeClass("animate__pulse");
 }
+/********* End animation functions *********/
+
 
 // Sleep function
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
+
+// Initial setup function
+$(document).ready( async function() {
+    await sleep(5000);
+    fillFollowerBar();
+    subscriberGoal();
+    rankBox();
+});
