@@ -65,6 +65,5 @@ $ cp config_template.json config.json
 $ docker build -t minisungam/interacties .
 
 # Run the container
-$ docker run -p 5500:80 -d minisungam/interacties
+$ docker run -p 5500:5500 -d minisungam/interacties
 ```
-You may want to change the accessible port on your computer if port 80 is in use. You can do so by changing the `80` in the last command to the port of your choosing.
