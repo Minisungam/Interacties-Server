@@ -65,7 +65,7 @@ async function initLiveChat(io) {
 // Scrape heart rate information from Pulsoid
 async function initHeartRate(io) {
     if (data.config.enableHeartRate) {
-        const browser = await puppeteer.launch({ headless: "new" });
+        const browser = await puppeteer.launch({ headless: "new", args: ['--no-sandbox', '--disable-setuid-sandbox']});
         const page = await browser.newPage();
         page.setDefaultTimeout(0);
 

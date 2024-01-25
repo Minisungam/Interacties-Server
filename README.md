@@ -56,6 +56,11 @@ $ git clone https://github.com/Minisungam/Interacties.git
 # Move into the directory
 $ cd interacties
 
+# Create the config file from the template
+$ cp config_template.json config.json
+
+# Open the config.json file in an editor of your choice and fill in the blanks
+
 # Build the image
 $ docker build -t minisungam/interacties .
 
