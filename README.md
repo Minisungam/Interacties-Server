@@ -53,6 +53,9 @@ If you're familiar with docker this should be trivial to you but here are some b
 # Clone the repository
 $ git clone https://github.com/Minisungam/Interacties.git
 
+# Move into the directory
+$ cd interacties
+
 # Build the image
 $ docker build -t minisungam/interacties .
 
