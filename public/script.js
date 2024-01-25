@@ -5,7 +5,7 @@ var playingAudio = false;
 var offScreenTime = 90000;
 
 /* Socket setup */
-const socket = io("http://localhost:5500", {
+const socket = io(`http://${window.location.hostname}:5500`, {
     query: {
         data: JSON.stringify({ client: "overlay" })
     }

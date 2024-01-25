@@ -42,7 +42,7 @@ async function initLiveChat(io) {
 
         // Handle errors
         mc.on("error", (err) => {
-            console.log("Masterchat Erorr: " + err.code);
+            console.log("Masterchat Error: " + err.code);
             // "disabled" => Live chat is disabled
             // "membersOnly" => No permission (members-only)
             // "private" => No permission (private video)
