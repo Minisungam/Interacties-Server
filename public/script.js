@@ -7,7 +7,7 @@ var offScreenTime = 90000;
 /* Socket setup */
 const socket = io("http://localhost:5500", {
     query: {
-        data: JSON.stringify({client: "overlay"})
+        data: JSON.stringify({ client: "overlay" })
     }
 });
 /********* Socket events *********/
@@ -22,29 +22,11 @@ socket.on("initData", (data) => {
     enableSC = data.config.enableSC;
     enableLC = data.config.enableLC;
 
-    if (enableBS) {
-        console.log("Beat Saber enabled.");
-        $("#rankBox").css("display", "block");
-    }
-    if (enableSC) {
-        console.log("Subscriber count enabled.");
-        $("#subscriberGoal").css("display", "flex");
-    }
-    if (enableLC) {
-        console.log("Live chat enabled.");
-        $("#liveChatBox").css("display", "flex");
-    }
-    if (enableHR) {
-        console.log("Heart rate enabled.");
-        $("#heartRate").css("display", "block");
-    }
-    if (enableLC && enableHR) {
-        $("#heartRate").css("bottom", "1.6em");
-    }
+    setOverlayElements();
 });
 
 // Socket event for recieving live chat messages
-socket.on("liveChat", ({authorName, message }) => {
+socket.on("liveChat", ({ authorName, message }) => {
     displayChat(authorName, message);
 });
 
@@ -54,10 +36,10 @@ socket.on("heartRate", (heartRate) => {
 });
 
 // Socket event for recieving tts messages
-socket.on("ttsReady", ({chat, mp3})  => {
+socket.on("ttsReady", ({ chat, mp3 }) => {
     try {
         const audio = new Audio();
-        const mp3Blob = new Blob([mp3], {type: "audio/mp3"});
+        const mp3Blob = new Blob([mp3], { type: "audio/mp3" });
         audio.src = URL.createObjectURL(mp3Blob);
 
         audio.onended = () => {
@@ -68,14 +50,25 @@ socket.on("ttsReady", ({chat, mp3})  => {
     } catch (error) {
         console.log(error);
     }
-    
+
     console.log("TTS playing: " + chat);
+});
+
+socket.on("editOverlayElements", (elements) => {
+    console.log("Overlay Elements updated.");
+
+    enableBS = elements.enableBS;
+    enableHR = elements.enableHR;
+    enableSC = elements.enableSC;
+    enableLC = elements.enableLC;
+
+    setOverlayElements();
 });
 /********* End socket events *********/
 
 
 /********* Settings page socket events *********/
-function setHeartRate(heartRate) { 
+function setHeartRate(heartRate) {
     $("#heartRateNumber").html(heartRate);
 }
 
@@ -88,6 +81,46 @@ function displayChat(authorName, message) {
     liveChatHTML = $("#liveChat").html();
     liveChatHTML += "<div class=\"chatMessage\"><p class=\"chatUserName\">" + authorName + ": </p><p class=\"chatText\">" + message + "</p></div>";
     $("#liveChat").html(liveChatHTML);
+}
+
+function setOverlayElements() {
+    if (enableBS) {
+        console.log("Beat Saber enabled.");
+        $("#rankBox").css("display", "block");
+    } else {
+        console.log("Beat Saber disabled.");
+        $("#rankBox").css("display", "none");
+    }
+
+    if (enableSC) {
+        console.log("Subscriber count enabled.");
+        $("#subscriberGoal").css("display", "flex");
+    } else {
+        console.log("Subscriber count disabled.");
+        $("#subscriberGoal").css("display", "none");
+    }
+
+    if (enableLC) {
+        console.log("Live chat enabled.");
+        $("#liveChatBox").css("display", "flex");
+    } else {
+        console.log("Live chat disabled.");
+        $("#liveChatBox").css("display", "none");
+    }
+
+    if (enableHR) {
+        console.log("Heart rate enabled.");
+        $("#heartRate").css("display", "block");
+    } else {
+        console.log("Heart rate disabled.");
+        $("#heartRate").css("display", "none");
+    }
+
+    if (enableLC && enableHR) {
+        $("#heartRate").css("bottom", "1.6em");
+    } else if (!enableLC || enableHR) {
+        $("#heartRate").css("bottom", "0.5em");
+    }
 }
 /********* End settings page socket events *********/
 
@@ -156,7 +189,7 @@ function sleep(ms) {
 }
 
 // Initial setup function
-$(document).ready( async function() {
+$(document).ready(async function () {
     await sleep(5000);
     fillFollowerBar();
     subscriberGoal();

@@ -6,14 +6,26 @@ const fetch = require("node-fetch");
 // Initialize the YouTube live chat module
 async function initLiveChat(io) {
     if (data.config.enableLiveChat) {
-        const mc = await Masterchat.init("4-628Ysk5ec");
-        
+        const mc = await Masterchat.init(data.config.youtubeLivestreamID);
+
         mc.on("chat", (chat) => {
-            data.liveChatHistory.push( { "authorName": chat.authorName, "message": stringify(chat.message) });
+            console.log(chat.authorName + ": " + stringify(chat.message));
+            if (stringify(chat.message).substring(0, 1) == "!") {
+                // TODO: Handle commands
+                console.log("Command detected, ignoring.")
+                return;
+            }
+
+            if (stringify(chat.message).substring(0, 4).toLowerCase() == "http") {
+                console.log("URL detected, ignoring.")
+                return;
+            }
+
+            data.liveChatHistory.push({ "authorName": chat.authorName, "message": stringify(chat.message) });
             io.emit("liveChat", { "authorName": chat.authorName, "message": stringify(chat.message) });
             data.ttsQueue.enqueue(chat.authorName + " said, " + stringify(chat.message));
         });
-          
+
         // Listen for any events
         //   See below for a list of available action types
         mc.on("actions", (actions) => {
@@ -27,10 +39,10 @@ async function initLiveChat(io) {
                 (action) => action.type === "addSuperStickerItemAction"
             );
         });
-        
+
         // Handle errors
         mc.on("error", (err) => {
-            console.log(err.code);
+            console.log("Masterchat Erorr: " + err.code);
             // "disabled" => Live chat is disabled
             // "membersOnly" => No permission (members-only)
             // "private" => No permission (private video)
@@ -39,12 +51,12 @@ async function initLiveChat(io) {
             // "denied" => Access denied (429)
             // "invalid" => Invalid request
         });
-        
+
         // Handle end event
         mc.on("end", () => {
             console.log("Live stream has ended");
         });
-        
+
         // Start polling live chat API
         mc.listen();
     }
@@ -88,7 +100,7 @@ async function initHeartRate(io) {
                 data.heartRate = newValue;
                 io.emit("heartRate", newValue);
             }
-        
+
             // Wait and check again
             await new Promise(resolve => setTimeout(resolve, 100));
         }
@@ -99,20 +111,28 @@ async function initHeartRate(io) {
 
 // Refresh goal data from Youtube
 async function refreshGoalData() {
-    await fetch("https://www.googleapis.com/youtube/v3/channels?id=" + data.config.youtubeChannelID + "&key=" + data.config.youtubeAPIKey + "&part=statistics", { method: 'GET' })
-    .then(res => res.json())
-    .then((json) => {
-        data.goalData.current_amount = Number(json.items[0].statistics.subscriberCount);
-    });
+    try {
+        await fetch("https://www.googleapis.com/youtube/v3/channels?id=" + data.config.youtubeChannelID + "&key=" + data.config.youtubeAPIKey + "&part=statistics", { method: 'GET' })
+            .then(res => res.json())
+            .then((json) => {
+                data.goalData.current_amount = Number(json.items[0].statistics.subscriberCount);
+            });
+    } catch (error) {   
+        console.log("Error refreshing goal data: " + error);
+    }
 }
 
 // Refresh BeatSaver player information
 async function refreshPlayerData() {
-    await fetch(data.config.scoreSaberProfileLink, { method: 'GET' })
-    .then(res => res.json())
-    .then((json) => {
-        data.playerData = json;
-    });
+    try {
+        await fetch(data.config.scoreSaberProfileLink, { method: 'GET' })
+            .then(res => res.json())
+            .then((json) => {
+                data.playerData = json;
+            });
+    } catch (error) {
+        console.log("Error refreshing player data: " + error);
+    }
 }
 
 module.exports = {

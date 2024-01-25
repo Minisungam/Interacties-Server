@@ -5,6 +5,7 @@ let config = {
     enableLC: false,
     subscriberGoal: 0,
     youtubeChannelID: "",
+    youtubeLiveStreamID: "",
     youtubeAPIKey: "",
     scoreSaberProfileLink: "",
     pusloidWidgetLink: ""
@@ -12,7 +13,7 @@ let config = {
 
 const socket = io("http://localhost:5500", {
     query: {
-        data: JSON.stringify({client: "settings"})
+        data: JSON.stringify({ client: "settings" })
     }
 });
 
@@ -21,45 +22,91 @@ socket.on("connect", () => {
 });
 
 socket.on("initSettingsData", (data) => {
-    console.log(data);
-
     config.enableBS = data.savedSettings.enableBS;
     config.enableSC = data.savedSettings.enableSC;
     config.enableHR = data.savedSettings.enableHR;
     config.enableLC = data.savedSettings.enableLC;
     config.subscriberGoal = data.goalData.target_amount;
     config.youtubeChannelID = data.youtubeChannelID;
+    config.youtubeLivestreamId = data.youtubeLivestreamID;
     config.youtubeAPIKey = data.youtubeAPIKey;
     config.scoreSaberProfileLink = data.scoreSaberProfileLink;
     config.pusloidWidgetLink = data.pusloidWidgetLink;
 
-    $("#beat-saber").prop("checked", config.enableBS);
-    $("#heart-rate").prop("checked", config.enableHR);
-    $("#subscriber-count").prop("checked", config.enableSC);
-    $("#live-chat").prop("checked", config.enableLC);
-    $("#subscriber-goal").val(config.subscriberGoal);
-    $("#youtube-channel-id").val(config.youtubeChannelID);
-    $("#youtube-api-key").val(config.youtubeAPIKey);
-    $("#score-saber-api-profile-link").val(config.scoreSaberProfileLink);
-    $("#pusloid-widget-link").val(config.pusloidWidgetLink);
+    $("#showBeatSaber").prop("checked", config.enableBS);
+    $("#showHeartRate").prop("checked", config.enableHR);
+    $("#showSubscriberCount").prop("checked", config.enableSC);
+    $("#showLiveChat").prop("checked", config.enableLC);
+    $("#subscriberGoal").val(config.subscriberGoal);
+    $("#youtubeChannelId").val(config.youtubeChannelID);
+    $("#youtubeLivestreamId").val(config.youtubeLivestreamId);
+    $("#youtubeApiKey").val(config.youtubeAPIKey);
+    $("#scoreSaberApiProfileLink").val(config.scoreSaberProfileLink);
+    $("#pusloidWidgetLink").val(config.pusloidWidgetLink);
 });
 
-function submitData() {
+function setOverlayElements() {
     console.log("Socket state:", socket ? (socket.connected ? "Connected" : "Connecting") : "Not initialized");
 
-    config.enableBS = $("#beat-saber").prop("checked");
-    config.enableHR = $("#heart-rate").prop("checked");
-    config.enableSC = $("#subscriber-count").prop("checked");
-    config.enableLC = $("#live-chat").prop("checked");
-    config.subscriberGoal = $("#subscriber-goal").val();
-    config.youtubeChannelID = $("#youtube-channel-id").val();
-    config.youtubeAPIKey = $("#youtube-api-key").val();
-    config.scoreSaberProfileLink = $("#score-saber-api-profile-link").val();
-    config.pusloidWidgetLink = $("#pusloid-widget-link").val();
+    config.enableBS = $("#showBeatSaber").prop("checked");
+    config.enableHR = $("#showHeartRate").prop("checked");
+    config.enableSC = $("#showSubscriberCount").prop("checked");
+    config.enableLC = $("#showLiveChat").prop("checked");
+
+    overlayElements = {
+        enableBS: config.enableBS,
+        enableHR: config.enableHR,
+        enableSC: config.enableSC,
+        enableLC: config.enableLC
+    };
 
     if (socket && socket.connected) {
-        console.log("Settings updating.");
-        socket.emit("updateSettings", config);
+        console.log("Overlay Elements updating.");
+        socket.emit("updateOverlayElements", overlayElements);
+    }
+    else {
+        console.log("Socket.IO: Not connected.");
+    }
+}
+
+function setLivestreamSettings() {
+    console.log("Socket state:", socket ? (socket.connected ? "Connected" : "Connecting") : "Not initialized");
+
+    config.subscriberGoal = $("#subscriberGoal").val();
+    config.youtubeChannelID = $("#youtubeChannelId").val();
+    config.youtubeLivestreamId = $("#youtubeLivestreamId").val();
+
+    livestreamSettings = {
+        subscriberGoal: config.subscriberGoal,
+        youtubeChannelID: config.youtubeChannelID,
+        youtubeLivestreamId: config.youtubeLivestreamId
+    };
+
+    if (socket && socket.connected) {
+        console.log("Livestream Settings updating.");
+        socket.emit("updateLivestreamSettings", livestreamSettings);
+    }
+    else {
+        console.log("Socket.IO: Not connected.");
+    }
+}
+
+function setGeneralSettings() {
+    console.log("Socket state:", socket ? (socket.connected ? "Connected" : "Connecting") : "Not initialized");
+
+    config.youtubeAPIKey = $("#youtubeApiKey").val();
+    config.scoreSaberProfileLink = $("#scoreSaberApiProfileLink").val();
+    config.pusloidWidgetLink = $("#pusloidWidgetLink").val();
+
+    generalSettings = {
+        youtubeApiKey: config.youtubeAPIKey,
+        scoreSaberProfileLink: config.scoreSaberProfileLink,
+        pusloidWidgetLink: config.pusloidWidgetLink
+    };
+
+    if (socket && socket.connected) {
+        console.log("General Settings updating.");
+        socket.emit("updateGeneralSettings", generalSettings);
     }
     else {
         console.log("Socket.IO: Not connected.");

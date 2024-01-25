@@ -11,6 +11,17 @@ const fs = require("fs");
 const util = require('util');
 const textToSpeech = require('@google-cloud/text-to-speech');
 
+const appVersion = '1.0.0';
+const asciiArt = `
+  _____       _                      _   _           
+ |_   _|     | |                    | | (_)          
+   | |  _ __ | |_ ___ _ __ __ _  ___| |_ _  ___  ___ 
+   | | | '_ \\| __/ _ \\ '__/ _' |/ __| __| |/ _ \\/ __|
+  _| |_| | | | ||  __/ | | (_| | (__| |_| |  __/\\__ \\
+ |_____|_| |_|\\__\\___|_|  \\__,_|\\___|\\__|_|\\___||___/
+                                                     
+Version: ${appVersion}
+`;
 
 process.env.GOOGLE_APPLICATION_CREDENTIALS = "google_auth.json";
 
@@ -31,14 +42,14 @@ data.goalData.target_amount = data.config.subscriberGoal;
 // TTS Function
 async function getTTS(message) {
     const ttsClient = new textToSpeech.TextToSpeechClient();
-  
+
     // Construct the request
     const request = {
-      input: {text: message},
-      // Select the language and SSML voice gender (optional)
-      voice: {name: 'en-US-Studio-O', languageCode: 'en-US', ssmlGender: 'FEMALE'},
-      // Select the type of audio encoding
-      audioConfig: {audioEncoding: 'MP3'},
+        input: { text: message },
+        // Select the language and SSML voice gender (optional)
+        voice: { name: 'en-US-Studio-O', languageCode: 'en-US', ssmlGender: 'FEMALE' },
+        // Select the type of audio encoding
+        audioConfig: { audioEncoding: 'MP3' },
     };
 
     try {
@@ -52,13 +63,13 @@ async function getTTS(message) {
 }
 
 async function processTTSQueue() {
-    while(true) {
+    while (true) {
         if (!data.ttsQueue.isEmpty() && !data.ttsPlaying) {
             console.log("TTS queue not empty, sending next message.");
             var chat = data.ttsQueue.dequeue();
             let tts = await getTTS(chat);
             if (tts) {
-                io.emit("ttsReady", { chat: chat, mp3: tts }, {binary: true});
+                io.emit("ttsReady", { chat: chat, mp3: tts }, { binary: true });
                 data.ttsPlaying = true;
             } else {
                 console.log("TTS failed, skipping.");
@@ -69,7 +80,7 @@ async function processTTSQueue() {
 }
 
 // Express GET requests
-app.get("/", (req,res) => {  
+app.get("/", (req, res) => {
     res.render("index");
 });
 
@@ -83,18 +94,19 @@ io.on('connection', (socket) => {
 
     console.log(`Socket.IO: ${clientData.client} user has connected.`);
     if (clientData.client == "settings") {
-        socket.emit('initSettingsData', { 
-            "savedSettings": data.config.savedSettings, 
+        socket.emit('initSettingsData', {
+            "savedSettings": data.config.savedSettings,
             "goalData": data.goalData,
             "youtubeChannelID": data.config.youtubeChannelID,
+            "youtubeLivestreamID": data.config.youtubeLivestreamID,
             "youtubeAPIKey": data.config.youtubeAPIKey,
             "scoreSaberProfileLink": data.config.scoreSaberProfileLink,
             "pusloidWidgetLink": data.config.pusloidWidgetLink
         });
     }
     else if (clientData.client == "overlay") {
-        socket.emit('initData', { 
-            "playerData": data.playerData, 
+        socket.emit('initData', {
+            "playerData": data.playerData,
             "goalData": data.goalData,
             "heartRate": data.heartRate,
             "config": data.config.savedSettings,
@@ -104,19 +116,35 @@ io.on('connection', (socket) => {
         });
     }
 
-    socket.on('updateSettings', (updatedData) => {
-        console.log("Settings updated.");
-        console.log(updatedData);
-    
+    socket.on('updateOverlayElements', (updatedData) => {
+        console.log("Overlay Elements updated.");
+
         data.config.savedSettings.enableBS = Boolean(updatedData.enableBS);
         data.config.savedSettings.enableHR = Boolean(updatedData.enableHR);
         data.config.savedSettings.enableSC = Boolean(updatedData.enableSC);
         data.config.savedSettings.enableLC = Boolean(updatedData.enableLC);
+
+        io.emit('editOverlayElements', updatedData);
+
+        saveSettings();
+    });
+
+    socket.on('updateLivestreamSettings', (updatedData) => {
+        console.log("Livestream Settings updated.");
+
         if (data.subscriberGoal != Number(updatedData.subscriberGoal)) {
             io.emit("goalDataUpdate", { "current_amount": data.goalData.current_amount, "target_amount": Number(updatedData.subscriberGoal) });
         }
         data.subscriberGoal = Number(updatedData.subscriberGoal);
         data.youtubeChannelID = updatedData.youtubeChannelID;
+        data.youtubeLivestreamID = updatedData.youtubeLivestreamID;
+
+        saveSettings();
+    });
+
+    socket.on('updateGeneralSettings', (updatedData) => {
+        console.log("General Settings updated.");
+
         data.youtubeAPIKey = updatedData.youtubeAPIKey;
         data.scoreSaberProfileLink = updatedData.scoreSaberProfileLink;
         data.pusloidWidgetLink = updatedData.pusloidWidgetLink;
@@ -132,16 +160,16 @@ io.on('connection', (socket) => {
 
 // Express GET requests to send data from the server
 app.get("/getTTS", (req, res) => {
-        res.download("output.mp3");
+    res.download("output.mp3");
 });
 
 // Refresh ScoreSaber rank data
-const updatePlayerData = setInterval(function() {
+const updatePlayerData = setInterval(function () {
     refreshPlayerData();
 }, 60000);
 
 // Refresh goal data from YouTube
-const updateGoalData = setInterval(function() {
+const updateGoalData = setInterval(function () {
     refreshGoalData();
 }, 30000);
 
@@ -152,6 +180,7 @@ function sleep(ms) {
 
 // Initial setup function
 function setup() {
+    console.log(asciiArt);
     initHeartRate(io);
     refreshGoalData();
     refreshPlayerData();
@@ -165,11 +194,12 @@ function saveSettings() {
         "enableBeatSaber": data.config.enableBeatSaber,
         "enableLiveChat": data.config.enableLiveChat,
         "enableSubscriberCount": data.config.enableSubscriberCount,
-        "subscriberGoal": data.subscriberGoal,
-        "youtubeChannelID": data.youtubeChannelID,
-        "youtubeAPIKey": data.youtubeAPIKey,
-        "scoreSaberProfileLink": data.scoreSaberProfileLink,
-        "pusloidWidgetLink": data.pusloidWidgetLink,
+        "subscriberGoal": data.config.subscriberGoal,
+        "youtubeChannelID": data.config.youtubeChannelID,
+        "youtubeLivestreamID": data.config.youtubeLivestreamID,
+        "youtubeAPIKey": data.config.youtubeAPIKey,
+        "scoreSaberProfileLink": data.config.scoreSaberProfileLink,
+        "pusloidWidgetLink": data.config.pusloidWidgetLink,
         "savedSettings": {
             "enableBS": data.config.savedSettings.enableBS,
             "enableHR": data.config.savedSettings.enableHR,
@@ -188,4 +218,4 @@ function saveSettings() {
 
 // Start the Express server
 setup();
-server.listen(PORT, () => console.log(`Server started at http://localhost:${PORT}`));
+server.listen(PORT, () => console.log(`Server started.\n Overlay: http://localhost:${PORT}\n Settings: http://localhost:${PORT}/settings\n`));
