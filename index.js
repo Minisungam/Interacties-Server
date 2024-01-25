@@ -218,4 +218,4 @@ function saveSettings() {
 
 // Start the Express server
 setup();
-server.listen(PORT, () => console.log(`Server started.\n Overlay: http://localhost:${PORT}\n Settings: http://localhost:${PORT}/settings\n`));
+server.listen(PORT, '0.0.0.0', () => console.log(`Server started.\n Overlay: http://localhost:${PORT}\n Settings: http://localhost:${PORT}/settings\n`));
