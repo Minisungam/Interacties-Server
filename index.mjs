@@ -2,8 +2,10 @@
 // CC BY-NC-ND 4.0
 
 // Imports
-import sharedData from './data.js';
-import { initHeartRate, initLiveChat, refreshGoalData, refreshPlayerData } from "./services.js";
+import sharedData from './entities/data.js';
+import { initLiveChat } from "./services/liveChat.js";
+import { refreshGoalData, refreshPlayerData } from "./services/fetchAPI.js";
+import { initHeartRate } from "./services/heartRate.js";
 import express from "express";
 import http from "http";
 import { Server } from "socket.io";
