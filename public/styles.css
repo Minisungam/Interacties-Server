@@ -1,159 +1,163 @@
 @font-face {
-    font-family: Library3AM;
-    src: url(Library\ 3\ am.otf);
+  font-family: Library3AM;
+  src: url(Library\ 3\ am.otf);
 }
 
 body {
-    overflow: hidden;
-    font-family: Library3AM;
+  overflow: hidden;
+  font-family: Library3AM;
 }
 
-.animate__animated.animate__backInRight, .animate__animated.animate__backInUp {
-    --animate-duration: 2s;
+.animate__animated.animate__backInRight,
+.animate__animated.animate__backInUp {
+  --animate-duration: 2s;
 }
 
 #rankBox {
-    display: none;
-    border: 2px solid black;
-    max-width: max-content;
-    max-height: max-content;
-    border-radius: 0.5em;
-    padding: 10px;
-    background-color: #262626;
-    position: absolute;
-    top: 1em;
-    right: 1em;
-    font-size: 3em;
+  display: none;
+  border: 2px solid black;
+  max-width: max-content;
+  max-height: max-content;
+  border-radius: 0.5em;
+  padding: 10px;
+  background-color: #262626;
+  position: absolute;
+  top: 1em;
+  right: 1em;
+  font-size: 3em;
 }
 
 #disUserName {
-    color: #e23c6b;
+  color: #e23c6b;
 }
 
 #disRank {
-    text-align: right;
-    color: #18a2ee;
+  text-align: right;
+  color: #18a2ee;
 }
 
 p {
-    padding: 0px;
-    margin: 0px;
+  padding: 0px;
+  margin: 0px;
 }
 
 .TTSBox {
-    /* display: flex; */
-    display: hidden;
-    flex-direction: row;
-    align-items: center;
-    border: 2px solid black;
-    background-color: #262626;
-    border-radius: 1em;
-    width: 600px;
-    height: 80px;
-    position: absolute;
-    overflow: hidden;
-    top: 1em;
-    left: calc(50% - 300px);
+  /* display: flex; */
+  display: hidden;
+  flex-direction: row;
+  align-items: center;
+  border: 2px solid black;
+  background-color: #262626;
+  border-radius: 1em;
+  width: 600px;
+  height: 80px;
+  position: absolute;
+  overflow: hidden;
+  top: 1em;
+  left: calc(50% - 300px);
 }
 
 #subscriberGoal {
-    display: none;
-    flex-direction: row;
-    align-items: center;
-    border: 2px solid black;
-    background-color: #262626;
-    border-radius: 1em;
-    width: 600px;
-    height: 80px;
-    position: absolute;
-    overflow: hidden;
-    bottom: 1em;
-    left: calc(50% - 300px);
+  display: none;
+  flex-direction: row;
+  align-items: center;
+  border: 2px solid black;
+  background-color: #262626;
+  border-radius: 1em;
+  width: 600px;
+  height: 80px;
+  position: absolute;
+  overflow: hidden;
+  bottom: 1em;
+  left: calc(50% - 300px);
 }
 
 #goalProgress {
-    z-index: -1;
-    position: absolute;
-    height: 100%;
-    border-radius: 0em 1em 1em 0em;
-    /* animated gradiant */
-    background: linear-gradient(45deg, #18a2ee 0%, #e23c6b 100%);
-    background-size: 400% 400%;
-    animation: gradient 5s ease infinite;
+  z-index: -1;
+  position: absolute;
+  height: 100%;
+  border-radius: 0em 1em 1em 0em;
+  /* animated gradiant */
+  background: linear-gradient(45deg, #18a2ee 0%, #e23c6b 100%);
+  background-size: 400% 400%;
+  animation: gradient 5s ease infinite;
 }
 @keyframes gradient {
-    0% {
-        background-position: 0% 50%;
-    }
-    50% {
-        background-position: 100% 50%;
-    }
-    100% {
-        background-position: 0% 50%;
-    }
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
-
 #heart {
-    flex: 1;
-    display: inline-block;
-    height: 90%;
-    object-fit: contain;
-    margin-left: 3px;
-    vertical-align: middle;
+  flex: 1;
+  display: inline-block;
+  height: 90%;
+  object-fit: contain;
+  margin-left: 3px;
+  vertical-align: middle;
 }
 
 #goalText {
-    flex: 4;
-    display: inline-block;
-    font-size: 34px;
-    color: #FFFFFF;
-    text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+  flex: 4;
+  display: inline-block;
+  font-size: 34px;
+  color: #ffffff;
+  text-shadow:
+    -1px 0 black,
+    0 1px black,
+    1px 0 black,
+    0 -1px black;
 }
 
 #heartRate {
-    display: none;
-    position: absolute;
-    overflow: auto;
-    left: 0.5em;
-    bottom: 0.5em;
-    font-size: 86px;
-    color: #e23c6b;
+  display: none;
+  position: absolute;
+  overflow: auto;
+  left: 0.5em;
+  bottom: 0.5em;
+  font-size: 86px;
+  color: #e23c6b;
 }
 
 #heartRateText {
-    display: inline-block;
-    color: #e23c6b;
+  display: inline-block;
+  color: #e23c6b;
 }
 
 #heartRateNumber {
-    display: inline-block;
-    color: #18a2ee;
+  display: inline-block;
+  color: #18a2ee;
 }
 
 #liveChatBox {
-    display: none;
-    position: absolute;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column-reverse;
-    left: 0.5em;
-    bottom: 0.5em;
-    height: 140px;
-    width: 400px;
-    font-size: 18px;
+  display: none;
+  position: absolute;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column-reverse;
+  left: 0.5em;
+  bottom: 0.5em;
+  height: 140px;
+  width: 400px;
+  font-size: 18px;
 }
 
 .chatMessage {
-    overflow-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .chatUserName {
-    display: inline;
-    color: #18a2ee;
+  display: inline;
+  color: #18a2ee;
 }
 
 .chatText {
-    display: inline;
-    color: #e23c6b;
+  display: inline;
+  color: #e23c6b;
 }

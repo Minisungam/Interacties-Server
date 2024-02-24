@@ -1,29 +1,29 @@
 export default class Queue {
-    constructor() {
-        this.items = [];
-    }
+  constructor() {
+    this.items = [];
+  }
 
-    enqueue(element) {
-        this.items.push(element);
-    }
+  enqueue(element) {
+    this.items.push(element);
+  }
 
-    dequeue() {
-        return this.items.shift();
-    }
+  dequeue() {
+    return this.items.shift();
+  }
 
-    isEmpty() {
-        return this.items.length === 0;
-    }
+  isEmpty() {
+    return this.items.length === 0;
+  }
 
-    front() {
-        return this.items[0];
-    }
+  front() {
+    return this.items[0];
+  }
 
-    size() {
-        return this.items.length;
-    }
+  size() {
+    return this.items.length;
+  }
 
-    print() {
-        console.log(this.items.toString());
-    }
+  print() {
+    console.log(this.items.toString());
+  }
 }

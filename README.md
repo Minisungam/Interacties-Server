@@ -7,15 +7,16 @@ My goal for this is to create a browser based OBS overlay for a livestream.
 The license is quite restrictive \(CC BY-NC-ND 4.0\) at this point because this project is my baby, but will likely be less restrictive once it matures.
 
 ## Features:
+
 - [x] Beat Saber rank pulled from ScoreSaber API
 - [x] Heart-rate scraped from Pulsoid
 - [x] Timed animations
 - [x] Modular component use based on parameters set on page call
 - [x] Settings in a config file
-- [X] Chat integration
-- [X] User interface to toggle/use interactions and change settings
+- [x] Chat integration
+- [x] User interface to toggle/use interactions and change settings
 - [ ] Other interactions done via chat
-- [X] Setup instructions
+- [x] Setup instructions
 
 Features and functionality are subject to change.
 
@@ -24,7 +25,9 @@ Features and functionality are subject to change.
 - Node.JS (latest)
 
 ## Setup
+
 First, to get all the files, enter these commands into your command line:
+
 ```
 # Clone the repository
 $ git clone https://github.com/Minisungam/Interacties.git
@@ -35,12 +38,16 @@ $ cd interacties
 # Install dependencies
 $ npm install
 ```
+
 Next, run the command below to create the config.json file, then open it up in a text editor and fill in your information.
+
 ```
 # Create the config file from the template
 $ cp config_template.json config.json
 ```
+
 Finally, we can start the server.
+
 ```
 # Run the development server
 $ npm run devStart
@@ -49,6 +56,7 @@ $ npm run devStart
 ## Docker
 
 If you're familiar with docker this should be trivial to you but here are some basic steps:
+
 ```
 # Clone the repository
 $ git clone https://github.com/Minisungam/Interacties.git
