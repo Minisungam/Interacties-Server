@@ -1,4 +1,4 @@
-const Queue = require("./queue.js");
+import Queue from "./queue.js";
 
 const sharedData = {
     playerData: {},
@@ -10,4 +10,4 @@ const sharedData = {
     config: {},
 };
 
-module.exports = sharedData;
+export default sharedData;

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <meta charset="utf-8">
+        <link rel="stylesheet" href="styles.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+        <script defer src="script.js"></script>
+        <title>Interacties</title>
+    </head>
+    <body>
+        <div id="rankBox" class="animate__animated animate__backOutRight">
+            <p id="disUserName"></p>
+            <p style="display: inline-block; color: #18a2ee;">RANK:</p>
+            <p id="disRank" style="display: inline-block;"></p>
+        </div>
+        <div id="subscriberGoal" class="animate__animated animate__backOutDown">
+            <div id="goalProgress"></div>
+            <img id="heart" src="https://static.twitchcdn.net/assets/follow-c7d174e9553cfc22fa72.svg" alt="hearts">
+            <p id="goalText"></p>
+        </div>
+        <div id="heartRate">
+            <p id="heartRateText">HR:</p>
+            <p id="heartRateNumber"></p>
+        </div>
+        <div id="liveChatBox">
+            <p id="liveChat"></p>
+        </div>
+        <div id="TTSBox">
+            <p id="TTS"></p>
+            <canvas id="TTSWave"></canvas>
+    </body>
+</html>

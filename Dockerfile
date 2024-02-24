@@ -1,6 +1,8 @@
 FROM node:20
 
-WORKDIR /usr/src/app
+RUN useradd -m -u 1001 node_user
+
+WORKDIR /usr/src/interacties
 
 RUN apt-get update && apt-get install -y \
     gconf-service \
@@ -43,10 +45,14 @@ RUN apt-get update && apt-get install -y \
 
 COPY package*.json ./
 
+RUN npx puppeteer browsers install chrome
+
 RUN npm install
 
 COPY . .
 
+USER node_user
+
 EXPOSE 5500
 
-CMD ["node", "index.js"]
+CMD ["node", "index.mjs"]
